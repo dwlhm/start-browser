@@ -19,7 +19,7 @@ fun HomeScreen(viewModel: HomeViewModel) {
 
     Box(modifier = Modifier.padding(16.dp)) {
         BasicText(
-            text = "Jajang Mihanda",
+            text = homeState?.name ?: "Jangle Miranda",
             style = TextStyle(
                 color = Color.Black,
                 fontSize = 20.sp,
