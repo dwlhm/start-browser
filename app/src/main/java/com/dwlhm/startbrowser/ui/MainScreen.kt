@@ -1,14 +1,6 @@
 package com.dwlhm.startbrowser.ui
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import com.dwlhm.home.api.registerHomeScreen
 import com.dwlhm.navigation.api.AppNavHost
@@ -21,11 +13,6 @@ fun AppRoot(
     val colors = AppTheme.colors
 
     AppTheme(colors) {
-        SetStatusBarStyle(
-            colors.statusBarIconDark,
-            background = colors.background
-        )
-
         MainScreen(routeRegistrar)
     }
 }
@@ -38,23 +25,15 @@ fun MainScreen(
 
     registerHomeScreen(routeRegistrar)
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(AppTheme.colors.background)
-            .statusBarsPadding()
-    ) {
-
-        Box(
-            modifier = Modifier
-                .background(AppTheme.colors.background)
-        )
-
+    // SystemBarScaffold otomatis handle:
+    // - Background naik ke area status bar (edge-to-edge)
+    // - Warna icon status bar auto-detect dari luminance background
+    // - Padding konten supaya tidak nabrak status bar
+    SystemBarScaffold {
         AppNavHost(
             navController,
             routeRegistrar,
             startDestination = "home"
         )
     }
-
 }
