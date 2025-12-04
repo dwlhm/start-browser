@@ -8,8 +8,7 @@ fun registerOnboardingScreen(routeRegistrar: RouteRegistrar) {
     routeRegistrar.register(
         route = "onboarding",
         content = {
-            val viewModel = OnboardingViewModel()
-            OnboardingScreen(viewModel)
+            OnboardingScreen()
         }
     )
 }
