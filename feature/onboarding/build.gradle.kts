@@ -1,5 +1,5 @@
 plugins {
-    alias(libs.plugins.android.application)
+    alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.ksp)
     alias(libs.plugins.dagger.hilt)
@@ -12,17 +12,14 @@ hilt {
 }
 
 android {
-    namespace = "com.dwlhm.startbrowser"
+    namespace = "com.dwlhm.onboarding"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.dwlhm.startbrowser"
         minSdk = 28
-        targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles("consumer-rules.pro")
     }
 
     buildTypes {
@@ -44,12 +41,12 @@ android {
 }
 
 dependencies {
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.compose.runtime)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
-    implementation(libs.navigation.compose)
-    implementation(libs.androidx.room.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -63,8 +60,8 @@ dependencies {
     implementation(libs.androidx.compose.foundation)
     implementation(libs.viewmodel.ktx)
 
+    implementation(libs.androidx.datastore.preferences)
+
     implementation(project(":core:navigation"))
-    implementation(project(":feature:home"))
-    implementation(project(":feature:onboarding"))
     implementation(project(":core:datastore"))
 }

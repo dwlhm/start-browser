@@ -23,3 +23,7 @@ rootProject.name = "Start Browser"
 include(":app")
 include(":core:navigation")
 include(":feature:home")
+include(":feature:onboarding")
+include(":core:domain")
+include(":core:datastore")
+include(":core:data")
