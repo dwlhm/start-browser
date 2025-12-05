@@ -17,12 +17,33 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun OnboardingScreen() {
+fun OnboardingScreen(
+    onFinish: () -> Unit = {}
+) {
+    val _messages = listOf(
+        "Where do we go for today?",
+        "Let’s explore something new!",
+        "Have a great journey!",
+        "97%...",
+        "98%...",
+        "99%...",
+        "🥳"
+    )
+    val animatedRotatingTextViewModel = AnimatedRotatingTextViewModel(
+        _messages,
+        onFinish = onFinish,
+
+    )
     Box(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
+        SoftGlowParticles(
+            modifier = Modifier
+                .fillMaxSize()
+        )
+
         Column(
             modifier = Modifier
                 .fillMaxSize(),
@@ -36,12 +57,6 @@ fun OnboardingScreen() {
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
                 ),
-//                fontFamily = EuphoriaScript,
-//                fontStyle = FontStyle.Italic,
-//                fontSize = 18.sp,
-//                color = Color.Black,
-//                modifier = Modifier
-//                    .align(Alignment.CenterHorizontally),
             )
             Row {
                 BasicText(
@@ -51,10 +66,6 @@ fun OnboardingScreen() {
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold
                     ),
-//                    fontFamily = InterScript,
-//                    fontWeight = FontWeight.Bold,
-//                    color = Color.Black,
-//                    fontSize = 24.sp
                 )
                 BasicText(
                     text = " the journey",
@@ -62,11 +73,16 @@ fun OnboardingScreen() {
                         color = Color.Black,
                         fontSize = 24.sp,
                     )
-//                    fontFamily = InterScript,
-//                    fontSize = 24.sp,
-//                    color = Color.Black,
                 )
             }
+        }
+
+        Column(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 24.dp),
+        ) {
+            AnimatedRotatingText(animatedRotatingTextViewModel)
         }
     }
 }
