@@ -1,5 +1,6 @@
 package com.dwlhm.browser.ui
 
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,7 +17,8 @@ data class BrowserUiState(
     val pageTitle: String = "",
     val canGoBack: Boolean = false,
     val canGoForward: Boolean = false,
-    val isUrlBarFocused: Boolean = false
+    val isUrlBarFocused: Boolean = false,
+    val themeColor: Color? = null
 )
 
 @HiltViewModel
@@ -53,6 +55,10 @@ class BrowserViewModel @Inject constructor() : ViewModel() {
     
     fun setUrlBarFocused(focused: Boolean) {
         _uiState.update { it.copy(isUrlBarFocused = focused) }
+    }
+    
+    fun updateThemeColor(color: Color?) {
+        _uiState.update { it.copy(themeColor = color) }
     }
     
     fun submitUrl(url: String): String {

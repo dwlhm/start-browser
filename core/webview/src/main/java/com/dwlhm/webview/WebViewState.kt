@@ -9,6 +9,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
 
 /**
  * State holder untuk WebView yang menyimpan state navigasi dan loading
@@ -42,6 +43,13 @@ class WebViewState(
         internal set
     
     var lastLoadedUrl: String by mutableStateOf("")
+        internal set
+    
+    /**
+     * Theme color extracted from website's meta tag
+     * null if no theme-color is specified
+     */
+    var themeColor: Color? by mutableStateOf(null)
         internal set
     
     /**
