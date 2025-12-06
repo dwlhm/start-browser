@@ -12,7 +12,7 @@ hilt {
 }
 
 android {
-    namespace = "com.dwlhm.home"
+    namespace = "com.dwlhm.browser"
     compileSdk = 36
 
     defaultConfig {
@@ -59,7 +59,9 @@ dependencies {
 
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.foundation)
+    implementation(libs.androidx.activity.compose)
     implementation(libs.viewmodel.ktx)
 
     implementation(project(":core:navigation"))
+    implementation(project(":core:webview"))
 }
