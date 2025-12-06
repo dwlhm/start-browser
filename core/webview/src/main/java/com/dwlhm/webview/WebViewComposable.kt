@@ -3,6 +3,7 @@ package com.dwlhm.webview
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.view.ViewGroup
+import android.webkit.JavascriptInterface
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
 import android.webkit.WebSettings
@@ -23,7 +24,12 @@ import androidx.webkit.WebViewFeature
 private class ThemeColorInterface(
     private val onThemeColorExtracted: (Color?) -> Unit
 ) {
-
+    @JavascriptInterface
+    fun setThemeColor(colorString: String?) {
+        val color = colorString?.let { parseColor(it) }
+        onThemeColorExtracted(color)
+    }
+    
     private fun parseColor(colorString: String): Color? {
         return try {
             val cleanColor = colorString.trim()
