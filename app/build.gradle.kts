@@ -66,5 +66,6 @@ dependencies {
     implementation(project(":core:navigation"))
     implementation(project(":feature:home"))
     implementation(project(":feature:onboarding"))
+    implementation(project(":feature:browser"))
     implementation(project(":core:datastore"))
 }

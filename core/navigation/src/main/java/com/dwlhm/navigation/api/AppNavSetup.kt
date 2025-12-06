@@ -13,7 +13,7 @@ fun AppNavHost(
 ) {
     NavHost(navController = navController, startDestination = startDestination) {
         routeRegistrar.getAllRoutes().forEach { (route, content) ->
-            composable(route) { content() }
+            composable(route) { content(navController) }
         }
     }
 }

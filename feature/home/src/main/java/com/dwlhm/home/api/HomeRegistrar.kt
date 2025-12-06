@@ -1,6 +1,6 @@
 package com.dwlhm.home.api
 
-import com.dwlhm.home.internal.HomeRepository
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.dwlhm.home.ui.HomeScreen
 import com.dwlhm.home.ui.HomeViewModel
 import com.dwlhm.navigation.api.RouteRegistrar
@@ -8,9 +8,12 @@ import com.dwlhm.navigation.api.RouteRegistrar
 fun registerHomeScreen(routeRegistrar: RouteRegistrar) {
     routeRegistrar.register(
         route = "home",
-        content = {
-            val viewModel = HomeViewModel(HomeRepository())
-            HomeScreen(viewModel)
+        content = { navController ->
+            val viewModel: HomeViewModel = hiltViewModel()
+            HomeScreen(
+                viewModel = viewModel,
+                onSearchClick = { navController.navigate("browser") }
+            )
         }
     )
 }

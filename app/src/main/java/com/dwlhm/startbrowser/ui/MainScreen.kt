@@ -9,6 +9,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.rememberNavController
 import com.dwlhm.datastore.preferences.OnboardingPrefs
+import com.dwlhm.browser.api.registerBrowserScreen
 import com.dwlhm.home.api.registerHomeScreen
 import com.dwlhm.navigation.api.AppNavHost
 import com.dwlhm.navigation.api.RouteRegistrar
@@ -42,6 +43,7 @@ fun MainScreen(
     // Register all screens
     registerHomeScreen(routeRegistrar)
     registerOnboardingScreen(routeRegistrar)
+    registerBrowserScreen(routeRegistrar)
 
     // SystemBarScaffold otomatis handle:
     // - Background naik ke area status bar (edge-to-edge)

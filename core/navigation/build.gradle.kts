@@ -41,7 +41,7 @@ android {
 }
 
 dependencies {
-    implementation(libs.navigation.compose)
+    api(libs.navigation.compose)
     androidTestImplementation(libs.navigation.testing)
     implementation(libs.kotlin.serialization.json)
 
