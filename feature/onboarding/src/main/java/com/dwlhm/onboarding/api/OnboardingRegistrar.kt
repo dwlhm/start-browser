@@ -10,7 +10,7 @@ import kotlinx.coroutines.launch
 fun registerOnboardingScreen(routeRegistrar: RouteRegistrar) {
     routeRegistrar.register(
         route = "onboarding",
-        content = { navController ->
+        content = { navController, _ ->
             val context = LocalContext.current
             val scope = rememberCoroutineScope()
             

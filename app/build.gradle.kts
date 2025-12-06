@@ -47,7 +47,6 @@ dependencies {
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
-    implementation(libs.material)
     implementation(libs.navigation.compose)
     implementation(libs.androidx.room.ktx)
     testImplementation(libs.junit)

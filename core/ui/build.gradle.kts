@@ -7,12 +7,8 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
-hilt {
-    enableAggregatingTask = false
-}
-
 android {
-    namespace = "com.dwlhm.home"
+    namespace = "com.dwlhm.ui"
     compileSdk = 36
 
     defaultConfig {
@@ -58,8 +54,6 @@ dependencies {
 
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.foundation)
+    implementation(libs.androidx.activity.compose)
     implementation(libs.viewmodel.ktx)
-
-    implementation(project(":core:navigation"))
-    implementation(project(":core:ui"))
 }

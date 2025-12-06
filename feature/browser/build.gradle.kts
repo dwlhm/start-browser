@@ -46,7 +46,6 @@ dependencies {
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
-    implementation(libs.material)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -64,4 +63,5 @@ dependencies {
 
     implementation(project(":core:navigation"))
     implementation(project(":core:webview"))
+    implementation(project(":core:ui"))
 }

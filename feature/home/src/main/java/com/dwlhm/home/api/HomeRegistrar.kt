@@ -4,15 +4,19 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.dwlhm.home.ui.HomeScreen
 import com.dwlhm.home.ui.HomeViewModel
 import com.dwlhm.navigation.api.RouteRegistrar
+import java.net.URLEncoder
 
 fun registerHomeScreen(routeRegistrar: RouteRegistrar) {
     routeRegistrar.register(
         route = "home",
-        content = { navController ->
+        content = { navController, _ ->
             val viewModel: HomeViewModel = hiltViewModel()
             HomeScreen(
                 viewModel = viewModel,
-                onSearchClick = { navController.navigate("browser") }
+                onSearchClick = { uri ->
+                    val encodedUrl = URLEncoder.encode(uri, "UTF-8")
+                    navController.navigate("browser?url=$encodedUrl")
+                }
             )
         }
     )
