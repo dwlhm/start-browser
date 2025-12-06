@@ -45,10 +45,6 @@ fun MainScreen(
     registerOnboardingScreen(routeRegistrar)
     registerBrowserScreen(routeRegistrar)
 
-    // SystemBarScaffold otomatis handle:
-    // - Background naik ke area status bar (edge-to-edge)
-    // - Warna icon status bar auto-detect dari luminance background
-    // - Padding konten supaya tidak nabrak status bar
     SystemBarScaffold {
         AppNavHost(
             navController,
