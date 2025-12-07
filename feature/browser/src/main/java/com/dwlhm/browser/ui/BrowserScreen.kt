@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -38,7 +39,13 @@ fun BrowserScreen(
     val focusManager = LocalFocusManager.current
 
     // Sync WebView state dengan ViewModel
-
+    LaunchedEffect(webViewState.themeColor) {
+        viewModel.updateThemeColor(webViewState.themeColor)
+    }
+    
+    LaunchedEffect(webViewState.canGoBack, webViewState.canGoForward) {
+        viewModel.updateNavigationState(webViewState.canGoBack, webViewState.canGoForward)
+    }
     
     // Animate the status bar color change
     val statusBarColor by animateColorAsState(
@@ -71,10 +78,19 @@ fun BrowserScreen(
                 modifier = Modifier.fillMaxSize(),
                 initialUrl = initialUrl,
                 enableJavaScript = true,
-                enableDomStorage = true
+                enableDomStorage = true,
+                onPageStarted = { url ->
+                    viewModel.updateLoadingState(true)
+                    viewModel.updateCurrentUrl(url)
+                },
+                onPageFinished = { url ->
+                    viewModel.onPageFinished(url, webViewState.pageTitle)
+                },
+                onProgressChanged = { progress ->
+                    viewModel.updateProgress(progress / 100f)
+                }
             )
         }
-
 
         // Loading Progress Bar
         AnimatedVisibility(

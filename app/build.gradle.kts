@@ -67,5 +67,7 @@ dependencies {
     implementation(project(":feature:onboarding"))
     implementation(project(":feature:browser"))
     implementation(project(":core:datastore"))
+    implementation(project(":core:data"))
+    implementation(project(":core:domain"))
     implementation(project(":core:ui"))
 }

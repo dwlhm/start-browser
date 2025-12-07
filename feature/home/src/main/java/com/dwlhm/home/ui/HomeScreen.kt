@@ -65,5 +65,23 @@ fun HomeScreen(
             onFocusChanged = {},
             backgroundColor = Color(0xFFF0F0F0)
         )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        BasicText(
+            text = "Last Visited",
+            style = TextStyle(
+                color = Color.Black,
+                fontSize = 16.sp
+            )
+        )
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        LastVisitedComposable(
+            onLastVisitedClick = { url ->
+                onSearchClick(url)
+            }
+        )
     }
 }

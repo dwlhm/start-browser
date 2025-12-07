@@ -2,11 +2,14 @@ package com.dwlhm.browser.ui
 
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.dwlhm.domain.browser.LastVisitedRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class BrowserUiState(
@@ -22,7 +25,9 @@ data class BrowserUiState(
 )
 
 @HiltViewModel
-class BrowserViewModel @Inject constructor() : ViewModel() {
+class BrowserViewModel @Inject constructor(
+    private val lastVisitedRepository: LastVisitedRepository
+) : ViewModel() {
     
     private val _uiState = MutableStateFlow(BrowserUiState())
     val uiState: StateFlow<BrowserUiState> = _uiState.asStateFlow()
@@ -70,5 +75,29 @@ class BrowserViewModel @Inject constructor() : ViewModel() {
         }
         _uiState.update { it.copy(inputUrl = formattedUrl, isUrlBarFocused = false) }
         return formattedUrl
+    }
+    
+    /**
+     * Called when page finishes loading to save last visited URL and title
+     */
+    fun onPageFinished(url: String, title: String) {
+        _uiState.update { 
+            it.copy(
+                currentUrl = url, 
+                inputUrl = url, 
+                pageTitle = title,
+                isLoading = false
+            ) 
+        }
+        saveLastVisited(url, title)
+    }
+    
+    /**
+     * Save URL and title to preferences in background
+     */
+    private fun saveLastVisited(url: String, title: String) {
+        viewModelScope.launch {
+            lastVisitedRepository.saveLastVisited(url, title)
+        }
     }
 }
