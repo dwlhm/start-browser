@@ -1,11 +1,13 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.ksp)
+    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.kotlin.compose)
 }
 
 android {
-    namespace = "com.dwlhm.webview"
+    namespace = "com.dwlhm.gecko"
     compileSdk = 36
 
     defaultConfig {
@@ -42,5 +44,6 @@ dependencies {
     implementation(libs.geckoview)
 
     implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.webkit)
+
+    implementation(project(":core:webview"))
 }

@@ -16,6 +16,9 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven {
+            url = uri("https://maven.mozilla.org/maven2/")
+        }
     }
 }
 
@@ -30,3 +33,4 @@ include(":core:datastore")
 include(":core:data")
 include(":core:webview")
 include(":core:ui")
+include(":engine:gecko")

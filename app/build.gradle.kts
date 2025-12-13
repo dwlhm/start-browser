@@ -70,4 +70,7 @@ dependencies {
     implementation(project(":core:data"))
     implementation(project(":core:domain"))
     implementation(project(":core:ui"))
+
+    implementation(project(":core:webview"))
+    implementation(project(":engine:gecko"))
 }

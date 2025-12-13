@@ -8,27 +8,33 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.rememberNavController
-import com.dwlhm.datastore.preferences.OnboardingPrefs
 import com.dwlhm.browser.api.registerBrowserScreen
+import com.dwlhm.browser.ui.BrowserTabManager
+import com.dwlhm.datastore.preferences.OnboardingPrefs
+import com.dwlhm.gecko.GeckoViewRuntime
 import com.dwlhm.home.api.registerHomeScreen
 import com.dwlhm.navigation.api.AppNavHost
 import com.dwlhm.navigation.api.RouteRegistrar
 import com.dwlhm.onboarding.api.registerOnboardingScreen
+import com.dwlhm.webview.WebViewEngine
 
 @Composable
 fun AppRoot(
-    routeRegistrar: RouteRegistrar,
+    routeRegistrar: RouteRegistrar
 ) {
-    val colors = AppTheme.colors
+    val context = LocalContext.current
+    val engine: WebViewEngine = GeckoViewRuntime.asEngine(context)
+    val tabManager = remember { BrowserTabManager(engine) }
 
-    AppTheme(colors) {
-        MainScreen(routeRegistrar)
+    AppTheme(AppTheme.colors) {
+        MainScreen(routeRegistrar, tabManager)
     }
 }
 
 @Composable
 fun MainScreen(
     routeRegistrar: RouteRegistrar,
+    tabManager: BrowserTabManager
 ) {
     val navController = rememberNavController()
     val context = LocalContext.current
@@ -43,7 +49,7 @@ fun MainScreen(
     // Register all screens
     registerHomeScreen(routeRegistrar)
     registerOnboardingScreen(routeRegistrar)
-    registerBrowserScreen(routeRegistrar)
+    registerBrowserScreen(routeRegistrar, tabManager)
 
     SystemBarScaffold {
         AppNavHost(
