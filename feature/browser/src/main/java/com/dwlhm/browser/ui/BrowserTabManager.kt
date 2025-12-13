@@ -1,15 +1,14 @@
 package com.dwlhm.browser.ui
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import com.dwlhm.webview.WebViewEngine
 import com.dwlhm.webview.WebViewSession
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class BrowserTabManager(
+@Singleton
+class BrowserTabManager @Inject constructor(
     private val engine: WebViewEngine
 ) {
     private val _tabs = mutableListOf<WebViewSession>()

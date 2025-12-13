@@ -14,4 +14,5 @@ interface WebViewSession {
     fun goBack()
     val canGoForward: StateFlow<Boolean>
     fun goForward()
+    val currentUrl: StateFlow<String?>
 }

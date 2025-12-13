@@ -1,5 +1,6 @@
 package com.dwlhm.gecko
 
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.dwlhm.webview.WebViewSession
@@ -26,6 +27,7 @@ class GeckoViewSession(
         )
     }
 
+    private val _currentUrl = MutableStateFlow<String?>(null)
     private val _canGoBack = MutableStateFlow(false)
     private val _canGoForward = MutableStateFlow(false)
 
@@ -43,11 +45,15 @@ class GeckoViewSession(
                 session: GeckoSession,
                 request: GeckoSession.NavigationDelegate.LoadRequest
             ): GeckoResult<AllowOrDeny?>? {
+                Log.d("url", request.uri)
+                _currentUrl.value = request.uri
                 // Allow all navigation requests
                 return null
             }
         }
     }
+
+    override val currentUrl = _currentUrl.asStateFlow()
 
     override fun loadUrl(url: String) {
         session.loadUri(url)

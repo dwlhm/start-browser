@@ -55,15 +55,17 @@ fun HomeScreen(
         )
         
         Spacer(modifier = Modifier.height(16.dp))
-        
+
         InputUri(
-            url = inputUrl,
-            onUrlChange = { inputUrl = it },
-            onUrlSubmit = { url ->
-                onSearchClick(url)
+            value = inputUrl,
+            backgroundColor = Color(0xFFF0F0F0),
+            modifier = Modifier.weight(1f),
+            onValueChange = {
+                inputUrl = it
             },
-            onFocusChanged = {},
-            backgroundColor = Color(0xFFF0F0F0)
+            onSubmit = { it: String ->
+                onSearchClick(it)
+            }
         )
 
         Spacer(modifier = Modifier.height(24.dp))
