@@ -4,8 +4,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.ui.platform.LocalContext
-import com.dwlhm.gecko.GeckoViewRuntime
 import com.dwlhm.navigation.api.RouteRegistrar
 import com.dwlhm.startbrowser.ui.AppRoot
 import dagger.hilt.android.AndroidEntryPoint

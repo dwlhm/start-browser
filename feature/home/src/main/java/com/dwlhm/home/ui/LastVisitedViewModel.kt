@@ -2,7 +2,7 @@ package com.dwlhm.home.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.dwlhm.domain.browser.LastVisitedRepository
+import com.dwlhm.datastore.preferences.lastvisited.LastVisitedRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -18,15 +18,15 @@ data class LastVisitedUiState(
 
 @HiltViewModel
 class LastVisitedViewModel @Inject constructor(
-    lastVisitedRepository: LastVisitedRepository
+    lastVisitedRepository: LastVisitedRepository,
 ) : ViewModel() {
-    
-    val uiState: StateFlow<LastVisitedUiState> = lastVisitedRepository.getLastVisited()
+
+    val uiState: StateFlow<LastVisitedUiState> = lastVisitedRepository.lastVisitedFlow
         .map { data ->
             if (data.url.isNotEmpty()) {
                 LastVisitedUiState(
                     url = data.url,
-                    title = data.title.ifEmpty { 
+                    title = data.title.ifEmpty {
                         // Fallback to formatted URL if title is empty
                         data.url.removePrefix("https://").removePrefix("http://").removeSuffix("/")
                     },

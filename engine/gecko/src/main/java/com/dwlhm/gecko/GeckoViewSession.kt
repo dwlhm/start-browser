@@ -28,6 +28,7 @@ class GeckoViewSession(
     }
 
     private val _currentUrl = MutableStateFlow<String?>(null)
+    private val _currentTitle = MutableStateFlow<String?>(null)
     private val _canGoBack = MutableStateFlow(false)
     private val _canGoForward = MutableStateFlow(false)
 
@@ -51,9 +52,28 @@ class GeckoViewSession(
                 return null
             }
         }
+        session.contentDelegate = object : GeckoSession.ContentDelegate {
+            override fun onTitleChange(session: GeckoSession, title: String?) {
+               _currentTitle.value = title
+            }
+        }
+        session.historyDelegate = object : GeckoSession.HistoryDelegate {
+            override fun onHistoryStateChange(
+                session: GeckoSession,
+                historyList: GeckoSession.HistoryDelegate.HistoryList
+            ) {
+                val currentIndex = historyList.currentIndex
+                if (currentIndex >= 0 && currentIndex < historyList.size) {
+                    val currentItem = historyList[currentIndex]
+                    _currentUrl.value = currentItem.uri
+                    _currentTitle.value = currentItem.title
+                }
+            }
+        }
     }
 
     override val currentUrl = _currentUrl.asStateFlow()
+    override val currentTitle = _currentTitle.asStateFlow()
 
     override fun loadUrl(url: String) {
         session.loadUri(url)

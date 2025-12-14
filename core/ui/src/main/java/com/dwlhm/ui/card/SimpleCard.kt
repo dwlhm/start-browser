@@ -20,7 +20,8 @@ fun SimpleCard(
     modifier: Modifier = Modifier,
     backgroundColor: Color = Color(0xFFF0F0F0),
     titleModifier: Modifier = Modifier,
-    descriptionModifier: Modifier = Modifier
+    descriptionModifier: Modifier = Modifier,
+    descriptionMaxLines: Int = Int.MAX_VALUE,
 ) {
     Column(
         modifier
@@ -43,7 +44,8 @@ fun SimpleCard(
                 fontSize = 14.sp,
                 color = Color.Black.copy(alpha = .8f)
             ),
-            modifier = descriptionModifier
+            modifier = descriptionModifier,
+            maxLines = descriptionMaxLines
         )
     }
 }

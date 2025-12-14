@@ -23,13 +23,15 @@ fun LastVisitedComposable(
             description = uiState.url,
             modifier = modifier
                 .fillMaxWidth()
-                .clickable { onLastVisitedClick(uiState.url) }
+                .clickable { onLastVisitedClick(uiState.url) },
+            descriptionMaxLines = 1,
         )
     } else {
         SimpleCard(
             title = "No recent visits",
             description = "Your browsing history will appear here",
-            modifier = modifier.fillMaxWidth()
+            modifier = modifier.fillMaxWidth(),
+            descriptionMaxLines = 1,
         )
     }
 }

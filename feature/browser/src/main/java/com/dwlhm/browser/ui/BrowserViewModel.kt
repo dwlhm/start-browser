@@ -2,6 +2,7 @@ package com.dwlhm.browser.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.dwlhm.datastore.preferences.lastvisited.LastVisitedRepository
 import com.dwlhm.webview.WebViewSession
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -14,7 +15,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class BrowserViewModel @Inject constructor(
-    private val tabManager: BrowserTabManager
+    private val tabManager: BrowserTabManager,
+    private val lastVisitedRepository: LastVisitedRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(BrowserUiState())
@@ -56,6 +58,15 @@ class BrowserViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(canGoForward = canGoForward)
                 }
+            }
+        }
+
+        viewModelScope.launch {
+            session.currentTitle.collect { currentTitle ->
+                lastVisitedRepository.saveLastVisited(
+                    url = _uiState.value.inputUrl,
+                    title = currentTitle ?: ""
+                )
             }
         }
     }
