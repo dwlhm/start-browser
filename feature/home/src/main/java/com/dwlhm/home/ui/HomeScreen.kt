@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicText
@@ -59,7 +60,7 @@ fun HomeScreen(
         InputUri(
             value = inputUrl,
             backgroundColor = Color(0xFFF0F0F0),
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.fillMaxWidth(),
             onValueChange = {
                 inputUrl = it
             },
