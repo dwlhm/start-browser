@@ -1,5 +1,6 @@
 package com.dwlhm.browser.ui
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,6 +18,7 @@ import com.dwlhm.ui.input.InputUri
 @Composable
 fun BrowserScreen(
     initialUrl: String,
+    onNavigateUp: () -> Unit,
     viewModel: BrowserViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -24,6 +26,13 @@ fun BrowserScreen(
 
     LaunchedEffect(Unit) {
         viewModel.init(initialUrl)
+    }
+
+    BackHandler {
+        val handled = viewModel.onBackPressed()
+        if (!handled) {
+            onNavigateUp()
+        }
     }
 
     Box(

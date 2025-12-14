@@ -23,6 +23,28 @@ class BrowserTabManager @Inject constructor(
 
     val activeSession = _activeSession.asStateFlow()
 
+    fun handleBack(): Boolean {
+        val session = _activeSession.value ?: return false
+
+        return if (session.canGoBack.value) {
+            session.goBack()
+            true
+        } else {
+            false
+        }
+    }
+
+    fun handleForward(): Boolean {
+        val session = _activeSession.value ?: return false
+
+        return if (session.canGoForward.value) {
+            session.goForward()
+            true
+        } else {
+            false
+        }
+    }
+
     fun switchTab(index: Int) {
         if (index in _tabs.indices) {
             _activeSession.value = _tabs[index]

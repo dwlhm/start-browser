@@ -72,6 +72,14 @@ class BrowserViewModel @Inject constructor(
         }
     }
 
+    fun onBackPressed(): Boolean {
+        return tabManager.handleBack()
+    }
+
+    fun onForwardPressed(): Boolean {
+        return tabManager.handleForward()
+    }
+
     /* =========================
        Init
        ========================= */
