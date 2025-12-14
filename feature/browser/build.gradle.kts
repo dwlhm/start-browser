@@ -63,6 +63,8 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.viewmodel.ktx)
 
+    implementation(libs.composeicon.feather)
+
     implementation(project(":core:navigation"))
     implementation(project(":core:webview"))
     implementation(project(":core:ui"))

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -13,7 +14,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.dwlhm.ui.button.IconButton
 import com.dwlhm.ui.input.InputUri
+import compose.icons.FeatherIcons
+import compose.icons.feathericons.ArrowRight
 
 @Composable
 fun BrowserScreen(
@@ -53,6 +57,19 @@ fun BrowserScreen(
             }
             Box {
                 Row {
+                    if (uiState.canGoForward) {
+                        IconButton(
+                            onClick = {
+                                viewModel.onForwardPressed()
+                            }
+                        ) {
+                            Icon(
+                                imageVector = FeatherIcons.ArrowRight,
+                                contentDescription = "Forward",
+                                tint = Color.Black
+                            )
+                        }
+                    }
                     InputUri(
                         value = uiState.inputUrl,
                         modifier = Modifier.weight(1f),

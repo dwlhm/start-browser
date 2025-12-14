@@ -49,7 +49,14 @@ class BrowserViewModel @Inject constructor(
                     it.copy(inputUrl = url ?: "")
                 }
             }
+        }
 
+        viewModelScope.launch {
+            session.canGoForward.collect { canGoForward ->
+                _uiState.update {
+                    it.copy(canGoForward = canGoForward)
+                }
+            }
         }
     }
 
