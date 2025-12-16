@@ -62,9 +62,17 @@ dependencies {
     implementation(libs.androidx.compose.foundation)
     implementation(libs.viewmodel.ktx)
 
+    implementation(libs.geckoview)
+
     implementation(project(":core:navigation"))
     implementation(project(":feature:home"))
     implementation(project(":feature:onboarding"))
     implementation(project(":feature:browser"))
     implementation(project(":core:datastore"))
+    implementation(project(":core:data"))
+    implementation(project(":core:domain"))
+    implementation(project(":core:ui"))
+
+    implementation(project(":core:webview"))
+    implementation(project(":engine:gecko"))
 }

@@ -39,6 +39,8 @@ dependencies {
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.foundation)
 
+    implementation(libs.geckoview)
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.webkit)
 }

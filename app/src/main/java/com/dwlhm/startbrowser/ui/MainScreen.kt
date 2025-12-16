@@ -8,8 +8,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.rememberNavController
-import com.dwlhm.datastore.preferences.OnboardingPrefs
 import com.dwlhm.browser.api.registerBrowserScreen
+import com.dwlhm.datastore.preferences.OnboardingPrefs
 import com.dwlhm.home.api.registerHomeScreen
 import com.dwlhm.navigation.api.AppNavHost
 import com.dwlhm.navigation.api.RouteRegistrar
@@ -17,11 +17,9 @@ import com.dwlhm.onboarding.api.registerOnboardingScreen
 
 @Composable
 fun AppRoot(
-    routeRegistrar: RouteRegistrar,
+    routeRegistrar: RouteRegistrar
 ) {
-    val colors = AppTheme.colors
-
-    AppTheme(colors) {
+    AppTheme(AppTheme.colors) {
         MainScreen(routeRegistrar)
     }
 }
@@ -45,10 +43,6 @@ fun MainScreen(
     registerOnboardingScreen(routeRegistrar)
     registerBrowserScreen(routeRegistrar)
 
-    // SystemBarScaffold otomatis handle:
-    // - Background naik ke area status bar (edge-to-edge)
-    // - Warna icon status bar auto-detect dari luminance background
-    // - Padding konten supaya tidak nabrak status bar
     SystemBarScaffold {
         AppNavHost(
             navController,

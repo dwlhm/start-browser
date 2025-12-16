@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicText
@@ -55,15 +56,35 @@ fun HomeScreen(
         )
         
         Spacer(modifier = Modifier.height(16.dp))
-        
+
         InputUri(
-            url = inputUrl,
-            onUrlChange = { inputUrl = it },
-            onUrlSubmit = { url ->
-                onSearchClick(url)
+            value = inputUrl,
+            backgroundColor = Color(0xFFF0F0F0),
+            modifier = Modifier.fillMaxWidth(),
+            onValueChange = {
+                inputUrl = it
             },
-            onFocusChanged = {},
-            backgroundColor = Color(0xFFF0F0F0)
+            onSubmit = { it: String ->
+                onSearchClick(it)
+            }
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        BasicText(
+            text = "Last Visited",
+            style = TextStyle(
+                color = Color.Black,
+                fontSize = 16.sp
+            )
+        )
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        LastVisitedComposable(
+            onLastVisitedClick = { url ->
+                onSearchClick(url)
+            }
         )
     }
 }

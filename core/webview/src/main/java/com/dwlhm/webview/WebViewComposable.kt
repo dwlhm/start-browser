@@ -3,6 +3,7 @@ package com.dwlhm.webview
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.view.ViewGroup
+import android.webkit.CookieManager
 import android.webkit.JavascriptInterface
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
@@ -231,6 +232,12 @@ fun BrowserWebView(
                 // Simpan referensi WebView ke state
                 state.webView = this
                 
+                // Configure CookieManager untuk persistent cookies
+                CookieManager.getInstance().apply {
+                    setAcceptCookie(true)
+                    setAcceptThirdPartyCookies(state.webView, true)
+                }
+                
                 // Konfigurasi WebSettings
                 settings.apply {
                     javaScriptEnabled = enableJavaScript
@@ -241,11 +248,14 @@ fun BrowserWebView(
                     builtInZoomControls = true
                     displayZoomControls = false
                     
-                    // Cache settings
+                    // Enable database storage untuk persistent data
+                    databaseEnabled = true
+                    
+                    // Cache settings - prefer cache untuk performance
                     cacheMode = WebSettings.LOAD_DEFAULT
                     
-                    // Mixed content mode untuk HTTPS
-                    mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
+                    // Mixed content mode - block insecure content on HTTPS pages
+                    mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
                     
                     // Media playback
                     mediaPlaybackRequiresUserGesture = false
@@ -292,6 +302,9 @@ fun BrowserWebView(
                         url?.let { onPageFinished?.invoke(it) }
                         updateNavigationState(view)
                         
+                        // Flush cookies setelah halaman selesai loading untuk persistence
+                        CookieManager.getInstance().flush()
+                        
                         // Extract theme color setelah halaman selesai loading
                         view?.evaluateJavascript(EXTRACT_THEME_COLOR_JS, null)
                     }
@@ -300,6 +313,15 @@ fun BrowserWebView(
                         view: WebView?,
                         request: WebResourceRequest?
                     ): Boolean {
+                        val url = request?.url?.toString() ?: return false
+                        
+                        // Auto upgrade HTTP to HTTPS
+                        if (url.startsWith("http://")) {
+                            val httpsUrl = url.replaceFirst("http://", "https://")
+                            view?.loadUrl(httpsUrl)
+                            return true
+                        }
+                        
                         // Biarkan WebView handle URL secara internal
                         return false
                     }
@@ -347,9 +369,12 @@ fun BrowserWebView(
     // Cleanup saat composable di-dispose
     DisposableEffect(Unit) {
         onDispose {
+            // Flush cookies untuk memastikan data tersimpan
+            CookieManager.getInstance().flush()
+            
             state.webView?.apply {
                 stopLoading()
-                clearHistory()
+                // JANGAN clearHistory() agar session tetap persistent
             }
             state.webView = null
         }

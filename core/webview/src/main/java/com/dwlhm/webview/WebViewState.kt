@@ -94,11 +94,14 @@ class WebViewState(
     
     /**
      * Format URL dengan menambahkan https:// jika belum ada
+     * dan upgrade http:// ke https:// untuk keamanan
      */
     private fun formatUrl(url: String): String {
         val trimmedUrl = url.trim()
         return when {
-            trimmedUrl.startsWith("http://") || trimmedUrl.startsWith("https://") -> trimmedUrl
+            // Upgrade HTTP ke HTTPS untuk keamanan
+            trimmedUrl.startsWith("http://") -> trimmedUrl.replaceFirst("http://", "https://")
+            trimmedUrl.startsWith("https://") -> trimmedUrl
             trimmedUrl.contains(".") && !trimmedUrl.contains(" ") -> "https://$trimmedUrl"
             else -> "https://www.google.com/search?q=${trimmedUrl.replace(" ", "+")}"
         }
