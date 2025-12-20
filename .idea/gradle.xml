@@ -24,6 +24,7 @@
             <option value="$PROJECT_DIR$/feature/browser" />
             <option value="$PROJECT_DIR$/feature/home" />
             <option value="$PROJECT_DIR$/feature/onboarding" />
+            <option value="$PROJECT_DIR$/feature/tabmanager" />
           </set>
         </option>
       </GradleProjectSettings>
