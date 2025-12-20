@@ -2,7 +2,7 @@ package com.dwlhm.tabmanager.di
 
 import com.dwlhm.tabmanager.internal.TabManagerImpl
 import com.dwlhm.webview.WebViewEngine
-import com.dwlhm.webview.tabmanager.TabManager
+import com.dwlhm.tabmanager.api.TabManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

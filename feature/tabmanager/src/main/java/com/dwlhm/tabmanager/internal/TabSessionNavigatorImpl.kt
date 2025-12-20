@@ -1,7 +1,7 @@
 package com.dwlhm.tabmanager.internal
 
-import com.dwlhm.webview.navigation.SessionNavigator
-import com.dwlhm.webview.tabmanager.TabManager
+import com.dwlhm.tabmanager.api.SessionNavigator
+import com.dwlhm.tabmanager.api.TabManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -20,13 +20,15 @@ class TabSessionNavigatorImpl @Inject constructor(
 
     override val activeSession = tabManager.activeSession
 
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+
     @OptIn(ExperimentalCoroutinesApi::class)
     override val currentUrl = activeSession
         .flatMapLatest { session ->
             session?.currentUrl ?: flowOf("")
         }
         .stateIn(
-            scope = CoroutineScope(SupervisorJob() + Dispatchers.Main),
+            scope,
             started = SharingStarted.Companion.Eagerly,
             initialValue = ""
         )
@@ -37,7 +39,7 @@ class TabSessionNavigatorImpl @Inject constructor(
             session?.currentTitle ?: flowOf("")
         }
         .stateIn(
-            scope = CoroutineScope(SupervisorJob() + Dispatchers.Main),
+            scope,
             started = SharingStarted.Companion.Eagerly,
             initialValue = ""
         )
@@ -48,17 +50,18 @@ class TabSessionNavigatorImpl @Inject constructor(
             session?.canGoBack ?: flowOf(false)
         }
         .stateIn(
-            scope = CoroutineScope(SupervisorJob() + Dispatchers.Main),
+            scope,
             started = SharingStarted.Companion.Eagerly,
             initialValue = false
         )
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     override val canGoForward = activeSession
         .flatMapLatest { session ->
             session?.canGoForward ?: flowOf(false)
         }
         .stateIn(
-            scope = CoroutineScope(SupervisorJob() + Dispatchers.Main),
+            scope,
             started = SharingStarted.Companion.Eagerly,
             initialValue = false
         )
@@ -71,6 +74,10 @@ class TabSessionNavigatorImpl @Inject constructor(
             // Belum ada session aktif, buat tab baru
             tabManager.addTab(url)
         }
+    }
+
+    override fun openInNewTab(url: String) {
+        tabManager.addTab(url)
     }
 
     override fun goBack(): Boolean {

@@ -1,17 +1,19 @@
 package com.dwlhm.tabmanager.internal
 
 import com.dwlhm.webview.WebViewEngine
-import com.dwlhm.webview.WebViewSession
-import com.dwlhm.webview.tabmanager.TabId
-import com.dwlhm.webview.tabmanager.TabManager
+import com.dwlhm.tabmanager.api.TabId
+import com.dwlhm.tabmanager.api.TabManager
+import com.dwlhm.tabmanager.api.TabSnapshot
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import java.util.UUID
 import javax.inject.Inject
@@ -21,22 +23,52 @@ import javax.inject.Singleton
 internal class TabManagerImpl @Inject constructor(
     private val engine: WebViewEngine
 ) : TabManager {
-
-    private val _tabs = MutableStateFlow<List<TabEntry>>(emptyList())
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+    private val _entries = MutableStateFlow<List<TabEntry>>(emptyList())
     private val _activeTabId = MutableStateFlow<TabId?>(null)
 
-    override val tabs = _tabs.map { entries -> entries.map { it.session } }
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override val tabs: StateFlow<List<TabSnapshot>> = _entries
+        .flatMapLatest { entries ->
+            if (entries.isEmpty()) {
+                flowOf(emptyList())
+            } else {
+                combine(
+                    entries.map { entry ->
+                        combine(
+                            entry.session.currentTitle,
+                            entry.session.currentUrl
+                        ) { title, url ->
+                            TabSnapshot(
+                                id = entry.id,
+                                title = title ?: "no title",
+                                url = url ?: "no url"
+                            )
+                        }
+                    }
+                ) { snapshots -> 
+                    val list = snapshots.toList()
+                    list
+                }
+            }
+        }
         .stateIn(
-            scope = CoroutineScope(SupervisorJob() + Dispatchers.Main),
-            started = SharingStarted.Eagerly,
-            initialValue = emptyList()
+            scope,
+            SharingStarted.Eagerly,
+            emptyList()
         )
 
+    override val activeTabId = _activeTabId.stateIn(
+        scope,
+        started = SharingStarted.Eagerly,
+        initialValue = null
+    )
+
     override val activeSession =
-        combine(_tabs, _activeTabId) { entries, activeId ->
+        combine(_entries, _activeTabId) { entries, activeId ->
             entries.firstOrNull { it.id == activeId }?.session
         }.stateIn(
-            scope = CoroutineScope(SupervisorJob() + Dispatchers.Main),
+            scope,
             started = SharingStarted.Eagerly,
             initialValue = null
         )
@@ -50,20 +82,21 @@ internal class TabManagerImpl @Inject constructor(
             session = session
         )
 
-        _tabs.value = _tabs.value + entry
+        _entries.value = _entries.value + entry
+
         _activeTabId.value = tabId
 
         session.loadUrl(url)
     }
 
     override fun switchTab(tabId: TabId) {
-        if (_tabs.value.any { it.id == tabId }) {
+        if (_entries.value.any { it.id == tabId }) {
             _activeTabId.value = tabId
         }
     }
 
     override fun closeTab(tabId: TabId) {
-        val currentTabs = _tabs.value
+        val currentTabs = _entries.value
         val index = currentTabs.indexOfFirst { it.id == tabId }
 
         if (index == - 1) return
@@ -75,7 +108,7 @@ internal class TabManagerImpl @Inject constructor(
             removeAt(index)
         }
 
-        _tabs.value = newTabs
+        _entries.value = newTabs
 
         _activeTabId.value = when {
             newTabs.isEmpty() -> null

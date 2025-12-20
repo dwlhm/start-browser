@@ -1,7 +1,7 @@
 package com.dwlhm.tabmanager.di
 
 import com.dwlhm.tabmanager.internal.TabSessionNavigatorImpl
-import com.dwlhm.webview.navigation.SessionNavigator
+import com.dwlhm.tabmanager.api.SessionNavigator
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

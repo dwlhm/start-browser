@@ -1,12 +1,12 @@
 package com.dwlhm.browser.ui
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dwlhm.datastore.preferences.lastvisited.LastVisitedRepository
+import com.dwlhm.tabmanager.api.SessionNavigator
 import com.dwlhm.webview.WebViewSession
-import com.dwlhm.webview.navigation.SessionNavigator
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -52,10 +52,12 @@ class BrowserViewModel @Inject constructor(
         // Title State
         viewModelScope.launch {
             navigator.currentTitle.collect { title ->
-                lastVisitedRepository.saveLastVisited(
-                    url = _uiState.value.inputUrl,
-                    title = title ?: ""
-                )
+                if (title != null) {
+                    lastVisitedRepository.saveLastVisited(
+                        url = _uiState.value.inputUrl,
+                        title = title
+                    )
+                }
             }
         }
 
@@ -99,8 +101,11 @@ class BrowserViewModel @Inject constructor(
        Init
        ========================= */
 
-    fun init(initialUrl: String) {
-        navigator.loadUrl(initialUrl)
+    fun init(initialUrl: String?) {
+        if (initialUrl == null) {
+            return
+        }
+        navigator.openInNewTab(initialUrl)
     }
 
     private fun normalizeUrl(input: String): String {

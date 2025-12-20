@@ -1,4 +1,4 @@
-package com.dwlhm.webview.navigation
+package com.dwlhm.tabmanager.api
 
 import com.dwlhm.webview.WebViewSession
 import kotlinx.coroutines.flow.StateFlow
@@ -13,6 +13,7 @@ interface SessionNavigator {
     val canGoForward: StateFlow<Boolean>
 
     fun loadUrl(url: String)
+    fun openInNewTab(url: String)
     fun goBack(): Boolean
     fun goForward(): Boolean
 }
