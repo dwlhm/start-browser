@@ -7,12 +7,8 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
-hilt {
-    enableAggregatingTask = false
-}
-
 android {
-    namespace = "com.dwlhm.browser"
+    namespace = "com.dwlhm.tabmanager"
     compileSdk = 36
 
     defaultConfig {
@@ -43,33 +39,16 @@ android {
 dependencies {
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.compose.runtime)
-
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.foundation)
 
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
-    implementation(libs.hilt.navigation.compose)
 
-    implementation(libs.kotlin.serialization.json)
+    implementation(libs.geckoview)
 
-    implementation(libs.androidx.compose.ui)
-    implementation(libs.androidx.compose.foundation)
-    implementation(libs.androidx.compose.material3)
-    implementation(libs.androidx.compose.material.icons)
-    implementation(libs.androidx.activity.compose)
-    implementation(libs.viewmodel.ktx)
+    implementation(libs.androidx.core.ktx)
 
-    implementation(libs.composeicon.feather)
-
-    implementation(project(":core:navigation"))
     implementation(project(":core:webview"))
-    implementation(project(":core:ui"))
-    implementation(project(":core:data"))
-    implementation(project(":core:domain"))
     implementation(project(":core:datastore"))
-    implementation(project(":feature:tabmanager"))
 }

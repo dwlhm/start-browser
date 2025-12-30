@@ -3,9 +3,9 @@ package com.dwlhm.browser.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dwlhm.datastore.preferences.lastvisited.LastVisitedRepository
+import com.dwlhm.tabmanager.api.SessionNavigator
 import com.dwlhm.webview.WebViewSession
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,58 +15,56 @@ import javax.inject.Inject
 
 @HiltViewModel
 class BrowserViewModel @Inject constructor(
-    private val tabManager: BrowserTabManager,
+    private val navigator: SessionNavigator,
     private val lastVisitedRepository: LastVisitedRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(BrowserUiState())
     val uiState = _uiState.asStateFlow()
 
-    init {
-        observeActiveSession()
-    }
-
     val activeSession: StateFlow<WebViewSession?> =
-        tabManager.activeSession
+        navigator.activeSession
 
-    private fun observeActiveSession() {
-        viewModelScope.launch {
-            tabManager.activeSession.collect { session ->
-                _uiState.update {
-                    it.copy(hasSession = session != null)
-                }
-
-                session?.let { observeSessionUrl(it) }
-            }
-        }
+    init {
+        observeNavigator()
     }
 
-    private var urlJob: Job? = null
-
-    private fun observeSessionUrl(session: WebViewSession) {
-        urlJob?.cancel()
-        urlJob = viewModelScope.launch {
-            session.currentUrl.collect { url ->
+    private fun observeNavigator() {
+        // URL
+        viewModelScope.launch {
+            navigator.currentUrl.collect { url ->
                 _uiState.update {
                     it.copy(inputUrl = url ?: "")
                 }
             }
         }
 
+        // Forward State
         viewModelScope.launch {
-            session.canGoForward.collect { canGoForward ->
+            navigator.canGoForward.collect { canGoForward ->
                 _uiState.update {
                     it.copy(canGoForward = canGoForward)
                 }
             }
         }
 
+        // Title State
         viewModelScope.launch {
-            session.currentTitle.collect { currentTitle ->
-                lastVisitedRepository.saveLastVisited(
-                    url = _uiState.value.inputUrl,
-                    title = currentTitle ?: ""
-                )
+            navigator.currentTitle.collect { title ->
+                if (title != null) {
+                    lastVisitedRepository.saveLastVisited(
+                        url = _uiState.value.inputUrl,
+                        title = title
+                    )
+                }
+            }
+        }
+
+        viewModelScope.launch {
+            navigator.activeSession.collect { session ->
+                _uiState.update {
+                    it.copy(hasSession = session != null)
+                }
             }
         }
     }
@@ -83,7 +81,7 @@ class BrowserViewModel @Inject constructor(
 
     fun onUrlSubmit(url: String) {
         val url = normalizeUrl(_uiState.value.inputUrl)
-        tabManager.activeSession.value?.loadUrl(url)
+        navigator.activeSession.value?.loadUrl(url)
 
         _uiState.update {
             it.copy(inputUrl = url)
@@ -91,21 +89,22 @@ class BrowserViewModel @Inject constructor(
     }
 
     fun onBackPressed(): Boolean {
-        return tabManager.handleBack()
+        return navigator.goBack()
     }
 
     fun onForwardPressed(): Boolean {
-        return tabManager.handleForward()
+        return navigator.goForward()
     }
 
     /* =========================
        Init
        ========================= */
 
-    fun init(initialUrl: String) {
-        if (tabManager.activeSession.value == null) {
-            tabManager.addTab(initialUrl)
+    fun init(initialUrl: String?) {
+        if (initialUrl == null) {
+            return
         }
+        navigator.openInNewTab(initialUrl)
     }
 
     private fun normalizeUrl(input: String): String {

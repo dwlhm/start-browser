@@ -16,6 +16,9 @@ fun registerHomeScreen(routeRegistrar: RouteRegistrar) {
                 onSearchClick = { uri ->
                     val encodedUrl = URLEncoder.encode(uri, "UTF-8")
                     navController.navigate("browser?url=$encodedUrl")
+                },
+                onOpenTab = {
+                    navController.navigate("browser")
                 }
             )
         }

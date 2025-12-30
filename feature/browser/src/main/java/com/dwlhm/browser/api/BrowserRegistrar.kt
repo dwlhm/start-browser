@@ -10,12 +10,14 @@ fun registerBrowserScreen(routeRegistrar: RouteRegistrar) {
         content = { navController, backStackEntry ->
             val encodedUrl = backStackEntry.arguments?.getString("url")
             val initialUrl = encodedUrl?.let { URLDecoder.decode(it, "UTF-8") }
-                ?: "https://www.google.com"
 
             BrowserScreen(
                 initialUrl = initialUrl,
                 onNavigateUp = {
                     navController.popBackStack()
+                },
+                onGoToHome = {
+                    navController.navigate("home")
                 }
             )
         }

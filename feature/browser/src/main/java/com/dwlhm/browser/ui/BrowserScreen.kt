@@ -18,12 +18,14 @@ import com.dwlhm.ui.button.IconButton
 import com.dwlhm.ui.input.InputUri
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.ArrowRight
+import compose.icons.feathericons.Square
 
 @Composable
 fun BrowserScreen(
-    initialUrl: String,
+    initialUrl: String?,
     onNavigateUp: () -> Unit,
-    viewModel: BrowserViewModel = hiltViewModel()
+    viewModel: BrowserViewModel = hiltViewModel(),
+    onGoToHome: () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val session by viewModel.activeSession.collectAsState()
@@ -76,6 +78,17 @@ fun BrowserScreen(
                         onValueChange = viewModel::onUrlChange,
                         onSubmit = viewModel::onUrlSubmit,
                     )
+                    IconButton(
+                        onClick = {
+                            onGoToHome()
+                        }
+                    ) {
+                        Icon(
+                            imageVector = FeatherIcons.Square,
+                            contentDescription = "Home",
+                            tint = Color.Black
+                        )
+                    }
                 }
             }
         }

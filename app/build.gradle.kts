@@ -75,4 +75,6 @@ dependencies {
 
     implementation(project(":core:webview"))
     implementation(project(":engine:gecko"))
+
+    implementation(project(":feature:tabmanager"))
 }
