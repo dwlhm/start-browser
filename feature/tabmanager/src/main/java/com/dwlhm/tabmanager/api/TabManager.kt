@@ -8,7 +8,10 @@ interface TabManager {
     val activeSession: StateFlow<WebViewSession?>
     val activeTabId: StateFlow<TabId?>
 
-    fun addTab(url: String)
-    fun switchTab(tabId: TabId)
+    fun addTab(
+        url: String,
+        defaultTabId: TabId? = null
+    )
+    fun switchTab(tabId: TabId, fallbackUrl: String)
     fun closeTab(tabId: TabId)
 }

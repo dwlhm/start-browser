@@ -1,5 +1,6 @@
 package com.dwlhm.tabmanager.ui
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -16,13 +17,14 @@ import com.dwlhm.tabmanager.api.TabSnapshot
 fun TabList(
     tabs: List<TabSnapshot>,
     activeTabId: TabId?,
-    onSelect: (TabId) -> Unit,
+    onSelect: (TabId, String) -> Unit,
     onClose: (TabId) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyColumn (
         modifier = modifier
             .padding(horizontal = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(
             items = tabs,
@@ -31,7 +33,7 @@ fun TabList(
             TabItem(
                 title = session.title,
                 isActive = session.id == activeTabId,
-                onClick = { onSelect(session.id) },
+                onClick = { onSelect(session.id, session.title) },
                 onClose = { onClose(session.id) },
                 modifier = Modifier.padding(end = 6.dp)
             )

@@ -20,6 +20,8 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.dwlhm.tabmanager.api.TabId
+import com.dwlhm.tabmanager.api.TabSnapshot
 import com.dwlhm.tabmanager.ui.TabList
 import com.dwlhm.ui.input.InputUri
 
@@ -29,7 +31,7 @@ fun HomeScreen(
     onSearchClick: (uri: String) -> Unit = {},
     onOpenTab: () -> Unit,
 ) {
-    val tabs by viewModel.tabs.collectAsState()
+    val tabs by viewModel.tabs.collectAsState(initial = emptyList())
     val activeTabid by viewModel.activeTabId.collectAsState()
     val homeState by viewModel.homeState.collectAsState()
     var inputUrl by remember { mutableStateOf("") }
@@ -94,9 +96,15 @@ fun HomeScreen(
         Spacer(Modifier.height(16.dp))
 
         TabList(
-            tabs = tabs,
-            onSelect = {
-                viewModel.switchTab(it)
+            tabs = tabs.map {
+                TabSnapshot(
+                    TabId(it.id),
+                    it.url,
+                    it.title.toString()
+                )
+            },
+            onSelect = { tabId, fallbackUrl ->
+                viewModel.switchTab(tabId, fallbackUrl)
                 onOpenTab()
             },
             onClose = {

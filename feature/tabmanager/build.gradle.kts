@@ -50,4 +50,5 @@ dependencies {
     implementation(libs.androidx.core.ktx)
 
     implementation(project(":core:webview"))
+    implementation(project(":core:datastore"))
 }

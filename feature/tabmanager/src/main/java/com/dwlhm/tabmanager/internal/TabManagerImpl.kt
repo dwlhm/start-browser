@@ -1,8 +1,10 @@
 package com.dwlhm.tabmanager.internal
 
+import com.dwlhm.datastore.room.tabmanager.api.StoredTab
 import com.dwlhm.webview.WebViewEngine
 import com.dwlhm.tabmanager.api.TabId
 import com.dwlhm.tabmanager.api.TabManager
+import com.dwlhm.tabmanager.api.TabPersistence
 import com.dwlhm.tabmanager.api.TabSnapshot
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -12,20 +14,27 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 internal class TabManagerImpl @Inject constructor(
-    private val engine: WebViewEngine
+    private val engine: WebViewEngine,
+    private val tabPersistence: TabPersistence
 ) : TabManager {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private val _entries = MutableStateFlow<List<TabEntry>>(emptyList())
     private val _activeTabId = MutableStateFlow<TabId?>(null)
+
+    init {
+        observePersistence()
+    }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override val tabs: StateFlow<List<TabSnapshot>> = _entries
@@ -73,9 +82,9 @@ internal class TabManagerImpl @Inject constructor(
             initialValue = null
         )
 
-    override fun addTab(url: String) {
+    override fun addTab(url: String, defaultTabId: TabId?) {
         val session = engine.createSession()
-        val tabId = TabId(UUID.randomUUID().toString())
+        val tabId = defaultTabId ?: TabId(UUID.randomUUID().toString())
 
         val entry = TabEntry(
             id = tabId,
@@ -89,9 +98,11 @@ internal class TabManagerImpl @Inject constructor(
         session.loadUrl(url)
     }
 
-    override fun switchTab(tabId: TabId) {
+    override fun switchTab(tabId: TabId, fallbackUrl: String) {
         if (_entries.value.any { it.id == tabId }) {
             _activeTabId.value = tabId
+        } else {
+            addTab(fallbackUrl, tabId)
         }
     }
 
@@ -114,6 +125,22 @@ internal class TabManagerImpl @Inject constructor(
             newTabs.isEmpty() -> null
             index < newTabs.size -> newTabs[index].id
             else -> newTabs.lastOrNull()?.id
+        }
+    }
+
+    private fun observePersistence() {
+        scope.launch {
+            tabs
+                .drop(1) // skip initial empty
+                .collect { snapshots ->
+                    snapshots.forEach { tab ->
+                        tabPersistence.persist(StoredTab(
+                            id = tab.id.value,
+                            url = tab.url,
+                            title = tab.title
+                        ))
+                    }
+                }
         }
     }
 }

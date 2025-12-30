@@ -1,6 +1,5 @@
 package com.dwlhm.browser.ui
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dwlhm.datastore.preferences.lastvisited.LastVisitedRepository
