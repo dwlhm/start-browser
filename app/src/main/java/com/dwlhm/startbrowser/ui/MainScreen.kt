@@ -9,6 +9,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.rememberNavController
 import com.dwlhm.browser.api.registerBrowserScreen
+import com.dwlhm.data.datastore.onboarding.OnboardingDatastore
 import com.dwlhm.datastore.preferences.OnboardingPrefs
 import com.dwlhm.home.api.registerHomeScreen
 import com.dwlhm.navigation.api.AppNavHost
@@ -35,7 +36,9 @@ fun MainScreen(
     
     // Check onboarding status
     LaunchedEffect(Unit) {
-        hasOnboarded = OnboardingPrefs.hasOnboarded(context)
+        hasOnboarded = OnboardingDatastore(
+            context = context
+        ).hasOnboarded()
     }
     
     // Register all screens

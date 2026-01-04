@@ -1,28 +1,27 @@
 package com.dwlhm.onboarding.api
 
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.platform.LocalContext
-import com.dwlhm.datastore.preferences.OnboardingPrefs
+import androidx.compose.runtime.LaunchedEffect
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.dwlhm.navigation.api.RouteRegistrar
 import com.dwlhm.onboarding.ui.OnboardingScreen
-import kotlinx.coroutines.launch
+import com.dwlhm.onboarding.ui.OnboardingViewModel
 
 fun registerOnboardingScreen(routeRegistrar: RouteRegistrar) {
     routeRegistrar.register(
         route = "onboarding",
         content = { navController, _ ->
-            val context = LocalContext.current
-            val scope = rememberCoroutineScope()
-            
-            OnboardingScreen(
-                onFinish = {
-                    scope.launch {
-                        OnboardingPrefs.setOnboarded(context)
-                        navController.navigate("home") {
-                            popUpTo("onboarding") { inclusive = true }
-                        }
+            val viewModel: OnboardingViewModel = hiltViewModel()
+
+            LaunchedEffect(Unit) {
+                viewModel.navigateToHome.collect {
+                    navController.navigate("home") {
+                        popUpTo("onboarding") { inclusive = true }
                     }
                 }
+            }
+            
+            OnboardingScreen(
+                onFinish = viewModel::onFinish
             )
         }
     )

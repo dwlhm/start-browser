@@ -1,5 +1,6 @@
 package com.dwlhm.onboarding.ui
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,6 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+@SuppressLint("ViewModelConstructorInComposable")
 @Composable
 fun OnboardingScreen(
     onFinish: () -> Unit = {}
@@ -32,7 +34,6 @@ fun OnboardingScreen(
     val animatedRotatingTextViewModel = AnimatedRotatingTextViewModel(
         _messages,
         onFinish = onFinish,
-
     )
     Box(
         modifier = Modifier
