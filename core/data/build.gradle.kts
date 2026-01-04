@@ -44,6 +44,12 @@ dependencies {
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
 
+    implementation(libs.androidx.datastore.preferences)
+
+    implementation(libs.room.runtime)
+    ksp(libs.room.compiler)
+    implementation(libs.androidx.room.ktx)
+
     implementation(project(":core:datastore"))
     implementation(project(":core:domain"))
 }
