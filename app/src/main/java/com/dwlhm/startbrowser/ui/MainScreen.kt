@@ -1,36 +1,44 @@
 package com.dwlhm.startbrowser.ui
 
+import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.rememberNavController
-import com.dwlhm.browser.api.registerBrowserScreen
+import com.dwlhm.browser.BrowserRuntime
+import com.dwlhm.browser.registerBrowserShell
 import com.dwlhm.data.datastore.onboarding.OnboardingDatastore
-import com.dwlhm.datastore.preferences.OnboardingPrefs
+import com.dwlhm.gecko.api.GeckoBrowserRuntime
 import com.dwlhm.home.api.registerHomeScreen
 import com.dwlhm.navigation.api.AppNavHost
 import com.dwlhm.navigation.api.RouteRegistrar
 import com.dwlhm.onboarding.api.registerOnboardingScreen
+import com.dwlhm.startbrowser.MainApplication
 
 @Composable
 fun AppRoot(
-    routeRegistrar: RouteRegistrar
+    routeRegistrar: RouteRegistrar,
+    context: Context
 ) {
     AppTheme(AppTheme.colors) {
-        MainScreen(routeRegistrar)
+        MainScreen(routeRegistrar, context)
     }
 }
 
 @Composable
 fun MainScreen(
     routeRegistrar: RouteRegistrar,
+    context: Context,
 ) {
     val navController = rememberNavController()
-    val context = LocalContext.current
+    
+    // Get browserRuntime from MainApplication
+    val app = context.applicationContext as MainApplication
+    val browserRuntime = GeckoBrowserRuntime.getInstance(app)
+    val browserSession = browserRuntime.createSession()
     
     var hasOnboarded by remember { mutableStateOf(false) }
     
@@ -44,7 +52,10 @@ fun MainScreen(
     // Register all screens
     registerHomeScreen(routeRegistrar)
     registerOnboardingScreen(routeRegistrar)
-    registerBrowserScreen(routeRegistrar)
+    registerBrowserShell(
+        routeRegistrar = routeRegistrar,
+        session = browserSession,
+    )
 
     SystemBarScaffold {
         AppNavHost(

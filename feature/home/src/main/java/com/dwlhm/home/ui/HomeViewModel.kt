@@ -19,25 +19,23 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val repository: HomeRepository,
-    private val tabManager: TabManager,
-    private val tabPersistence: TabPersistence,
 ) : ViewModel() {
     private val _homeState = MutableStateFlow<Home?>(null)
     val homeState: StateFlow<Home?> = _homeState
 
-    val tabs = tabPersistence.observeAll()
+//    val tabs = tabPersistence.observeAll()
+//
+//    val activeTabId = tabManager.activeTabId
 
-    val activeTabId = tabManager.activeTabId
+//    fun switchTab(tabId: TabId, fallbackUrl: String) {
+//        tabManager.switchTab(tabId, fallbackUrl)
+//    }
 
-    fun switchTab(tabId: TabId, fallbackUrl: String) {
-        tabManager.switchTab(tabId, fallbackUrl)
-    }
-
-    fun closeTab(tabId: TabId) {
-        tabManager.closeTab(tabId)
-
-        viewModelScope.launch {
-            tabPersistence.remove(tabId)
-        }
-    }
+//    fun closeTab(tabId: TabId) {
+//        tabManager.closeTab(tabId)
+//
+//        viewModelScope.launch {
+//            tabPersistence.remove(tabId)
+//        }
+//    }
 }

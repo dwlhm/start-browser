@@ -64,6 +64,7 @@ dependencies {
 
     implementation(libs.geckoview)
 
+    implementation(project(":core:browser"))
     implementation(project(":core:navigation"))
     implementation(project(":feature:home"))
     implementation(project(":feature:onboarding"))
@@ -77,4 +78,6 @@ dependencies {
     implementation(project(":engine:gecko"))
 
     implementation(project(":feature:tabmanager"))
+
+    implementation(project(":shell:browser"))
 }

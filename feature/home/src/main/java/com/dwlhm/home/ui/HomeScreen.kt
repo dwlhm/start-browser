@@ -31,8 +31,8 @@ fun HomeScreen(
     onSearchClick: (uri: String) -> Unit = {},
     onOpenTab: () -> Unit,
 ) {
-    val tabs by viewModel.tabs.collectAsState(initial = emptyList())
-    val activeTabid by viewModel.activeTabId.collectAsState()
+//    val tabs by viewModel.tabs.collectAsState(initial = emptyList())
+//    val activeTabid by viewModel.activeTabId.collectAsState()
     val homeState by viewModel.homeState.collectAsState()
     var inputUrl by remember { mutableStateOf("") }
 
@@ -95,23 +95,23 @@ fun HomeScreen(
 
         Spacer(Modifier.height(16.dp))
 
-        TabList(
-            tabs = tabs.map {
-                TabSnapshot(
-                    TabId(it.id),
-                    it.url,
-                    it.title.toString()
-                )
-            },
-            onSelect = { tabId, fallbackUrl ->
-                viewModel.switchTab(tabId, fallbackUrl)
-                onOpenTab()
-            },
-            onClose = {
-                viewModel.closeTab(it)
-            },
-            activeTabId = activeTabid,
-            modifier = Modifier.fillMaxWidth()
-        )
+//        TabList(
+//            tabs = tabs.map {
+//                TabSnapshot(
+//                    TabId(it.id),
+//                    it.url,
+//                    it.title.toString()
+//                )
+//            },
+//            onSelect = { tabId, fallbackUrl ->
+//                viewModel.switchTab(tabId, fallbackUrl)
+//                onOpenTab()
+//            },
+//            onClose = {
+//                viewModel.closeTab(it)
+//            },
+//            activeTabId = activeTabid,
+//            modifier = Modifier.fillMaxWidth()
+//        )
     }
 }

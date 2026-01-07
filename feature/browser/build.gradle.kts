@@ -65,6 +65,9 @@ dependencies {
 
     implementation(libs.composeicon.feather)
 
+    implementation(project(":core:browser"))
+    implementation(project(":engine:gecko"))
+
     implementation(project(":core:navigation"))
     implementation(project(":core:webview"))
     implementation(project(":core:ui"))
