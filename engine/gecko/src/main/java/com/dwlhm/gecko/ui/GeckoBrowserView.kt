@@ -7,21 +7,22 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import com.dwlhm.browser.BrowserSession
+import com.dwlhm.browser.BrowserViewHost
 import org.mozilla.geckoview.GeckoView
 
 @Composable
 fun GeckoBrowserView(
-    session: BrowserSession,
+    viewHost: BrowserViewHost,
     modifier: Modifier,
     context: Context,
 ) {
     val geckoView = remember { GeckoView(context) }
 
-    DisposableEffect(session) {
-        session.attachToView(geckoView)
+    DisposableEffect(Unit) {
+        viewHost.attach(geckoView)
 
         onDispose {
-            session.stop()
+            viewHost.detach()
             geckoView.releaseSession()
         }
     }

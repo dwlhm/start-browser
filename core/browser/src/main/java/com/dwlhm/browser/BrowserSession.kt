@@ -9,6 +9,7 @@ interface BrowserSession {
     val canGoForward: StateFlow<Boolean>
 
     fun attachToView(view: Any)
+    fun detachFromView()
     fun loadUrl(url: String)
     fun reload()
     fun stop()

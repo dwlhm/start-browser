@@ -20,9 +20,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.dwlhm.tabmanager.api.TabId
-import com.dwlhm.tabmanager.api.TabSnapshot
-import com.dwlhm.tabmanager.ui.TabList
 import com.dwlhm.ui.input.InputUri
 
 @Composable

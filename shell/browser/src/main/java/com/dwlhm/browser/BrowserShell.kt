@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -20,22 +21,19 @@ import com.dwlhm.ui.input.InputUri
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.ArrowRight
 import compose.icons.feathericons.Square
+import kotlinx.coroutines.Job
 
 @Composable
 fun BrowserShell(
-    initialUrl: String?,
     onNavigateUp: () -> Unit,
     onGoToHome: () -> Unit,
-    viewModel: BrowserShellViewModel
+    viewModel: BrowserShellViewModel,
+    viewHost: BrowserViewHost,
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    LaunchedEffect(Unit) {
-        viewModel.init(initialUrl)
-    }
-
     BackHandler {
-        val handled = viewModel.browserSession.goBack()
+        val handled = viewModel.goBack()
         if (!handled) {
             onNavigateUp()
         }
@@ -55,7 +53,7 @@ fun BrowserShell(
                     .weight(1f)
             ) {
                 BrowserView(
-                    session = viewModel.browserSession,
+                    browserViewHost = viewHost,
                     modifier = Modifier.fillMaxSize(),
                     context = LocalContext.current
                 )
@@ -65,7 +63,7 @@ fun BrowserShell(
                     if (uiState.canGoForward) {
                         IconButton (
                             onClick = {
-                                viewModel.browserSession.goForward()
+                                viewModel.goForward()
                             }
                         ) {
                             Icon(

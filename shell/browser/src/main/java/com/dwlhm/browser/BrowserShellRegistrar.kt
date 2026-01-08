@@ -5,12 +5,9 @@ import java.net.URLDecoder
 
 fun registerBrowserShell(
     routeRegistrar: RouteRegistrar,
-    session: BrowserSession,
+    tabManager: TabManager,
+    viewHost: BrowserViewHost,
 ) {
-    val viewModel = BrowserShellViewModel(
-        session = session,
-    )
-
     routeRegistrar.register(
         route = "browser?url={url}",
         content = { navController, backStackEntry ->
@@ -19,7 +16,7 @@ fun registerBrowserShell(
                 URLDecoder.decode(it, "UTF-8")
             }
 
-            BrowserShell(
+            BrowserShellRoute(
                 initialUrl = initialUrl,
                 onNavigateUp = {
                     navController.popBackStack()
@@ -27,7 +24,8 @@ fun registerBrowserShell(
                 onGoToHome = {
                     navController.navigate("home")
                 },
-                viewModel = viewModel,
+                tabManager,
+                viewHost
             )
         }
     )

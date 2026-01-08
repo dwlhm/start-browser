@@ -34,6 +34,14 @@ class GeckoBrowserSession(
         // Release any existing session first
         geckoView.releaseSession()
         geckoView.setSession(session)
+
+        session.setActive(true)
+        session.setFocused(true)
+    }
+
+    override fun detachFromView() {
+        session.setActive(true)
+        session.setFocused(false)
     }
 
     override fun loadUrl(url: String) {

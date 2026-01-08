@@ -9,6 +9,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.navigation.compose.rememberNavController
 import com.dwlhm.browser.BrowserRuntime
+import com.dwlhm.browser.api.BrowserRuntimeController
 import com.dwlhm.browser.registerBrowserShell
 import com.dwlhm.data.datastore.onboarding.OnboardingDatastore
 import com.dwlhm.gecko.api.GeckoBrowserRuntime
@@ -33,35 +34,40 @@ fun MainScreen(
     routeRegistrar: RouteRegistrar,
     context: Context,
 ) {
-    val navController = rememberNavController()
-    
-    // Get browserRuntime from MainApplication
     val app = context.applicationContext as MainApplication
-    val browserRuntime = GeckoBrowserRuntime.getInstance(app)
-    val browserSession = browserRuntime.createSession()
+    val navController = rememberNavController()
+    var hasOnboarded by remember { mutableStateOf<Boolean?>(null) }
     
-    var hasOnboarded by remember { mutableStateOf(false) }
-    
-    // Check onboarding status
     LaunchedEffect(Unit) {
         hasOnboarded = OnboardingDatastore(
             context = context
         ).hasOnboarded()
     }
-    
-    // Register all screens
-    registerHomeScreen(routeRegistrar)
-    registerOnboardingScreen(routeRegistrar)
-    registerBrowserShell(
-        routeRegistrar = routeRegistrar,
-        session = browserSession,
-    )
+
+    val didRegister = remember { mutableStateOf(false) }
+
+    // Only register routes in main process where these are initialized
+    val tabManager = app.tabManager
+    val viewHost = app.browserViewHost
+
+    if (!didRegister.value && tabManager != null && viewHost != null) {
+        registerHomeScreen(routeRegistrar)
+        registerOnboardingScreen(routeRegistrar)
+        registerBrowserShell(
+            routeRegistrar = routeRegistrar,
+            tabManager = tabManager,
+            viewHost = viewHost,
+        )
+        didRegister.value = true
+    }
+
+    if (hasOnboarded == null) return
 
     SystemBarScaffold {
         AppNavHost(
             navController,
             routeRegistrar,
-            startDestination = if (hasOnboarded) "home" else "onboarding"
+            startDestination = if (hasOnboarded == true) "home" else "onboarding"
         )
     }
 }

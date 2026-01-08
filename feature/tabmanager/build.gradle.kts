@@ -51,4 +51,6 @@ dependencies {
 
     implementation(project(":core:webview"))
     implementation(project(":core:datastore"))
+
+    implementation(project(":core:browser"))
 }

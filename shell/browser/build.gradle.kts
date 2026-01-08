@@ -43,11 +43,11 @@ android {
 
 dependencies {
     implementation(project(":core:navigation"))
-
     implementation(project(":core:ui"))
-
     implementation(project(":core:browser"))
+
     implementation(project(":feature:browser"))
+    implementation(project(":feature:tabmanager"))
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.compose.runtime)
@@ -63,11 +63,4 @@ dependencies {
 
     implementation(libs.androidx.compose.material3)
     implementation(libs.composeicon.feather)
-
-//    implementation(libs.androidx.core.ktx)
-//    implementation(libs.androidx.appcompat)
-//    implementation(libs.material)
-//    testImplementation(libs.junit)
-//    androidTestImplementation(libs.androidx.junit)
-//    androidTestImplementation(libs.androidx.espresso.core)
 }

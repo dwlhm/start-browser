@@ -22,6 +22,10 @@ class BrowserSessionController(
         session.attachToView(view)
     }
 
+    override fun detachFromView() {
+        session.detachFromView()
+    }
+
     override fun loadUrl(url: String) {
         session.loadUrl(url)
     }
