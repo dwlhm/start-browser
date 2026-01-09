@@ -7,7 +7,7 @@ import com.dwlhm.browser.TabManager
 
 class DefaultTabManager(
     private val browserRuntime: BrowserRuntime
-): TabManager, BrowserViewHost {
+): TabManager {
     private var _currentTab: BrowserSession? = null
     private var _attachedView: Any? = null
 
@@ -41,7 +41,19 @@ class DefaultTabManager(
         _currentTab = null
     }
 
-    override fun attach(view: Any) {
+    override fun provideViewHost(): BrowserViewHost {
+        return object : BrowserViewHost {
+            override fun attach(view: Any) {
+                this@DefaultTabManager.attach(view)
+            }
+
+            override fun detach() {
+                this@DefaultTabManager.detach()
+            }
+        }
+    }
+
+    fun attach(view: Any) {
         if (_attachedView === view) return
 
         detach()
@@ -49,8 +61,10 @@ class DefaultTabManager(
         _currentTab?.attachToView(view)
     }
 
-    override fun detach() {
-        _currentTab?.detachFromView()
-        _attachedView = null
+     fun detach() {
+         if (_currentTab != null) {
+             _currentTab?.detachFromView()
+             _attachedView = null
+         }
     }
 }

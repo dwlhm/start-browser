@@ -10,36 +10,30 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class BrowserShellViewModel(
-    private val tabManager: TabManager,
+    private val browserSession: BrowserSession,
 ): ViewModel() {
     private val _uiState = MutableStateFlow(BrowserUiState())
     val uiState = _uiState.asStateFlow()
-    private var _browserSession: BrowserSession? = null
     private var _observeJob: Job? = null
 
-    fun onShellReady() {
-        val session = tabManager.acquire()
-        _browserSession = session
-
-        _observeJob?.cancel()
-        _observeJob = observeBrowserSession(session)
+    init {
+        _observeJob = observeBrowserSession()
     }
 
-    fun onShellGone() {
+    override fun onCleared() {
+        super.onCleared()
         _observeJob?.cancel()
-        _observeJob = null
-        _browserSession = null
     }
 
-    fun init(initialUrl: String?) {
+    fun loadInitialUrl(initialUrl: String?) {
         if (initialUrl != null) {
-            _browserSession?.loadUrl(initialUrl)
+            browserSession.loadUrl(initialUrl)
         }
     }
 
     fun onUrlSubmit(inputUrl: String) {
         val url = normalizeUrl(inputUrl)
-        _browserSession?.loadUrl(url)
+        browserSession.loadUrl(url)
     }
 
     fun onUrlChange(newValue: String) {
@@ -49,14 +43,12 @@ class BrowserShellViewModel(
     }
 
     fun goBack(): Boolean {
-        val session = _browserSession ?: return false
-        session.goBack()
+        browserSession.goBack()
         return true
     }
 
     fun goForward(): Boolean {
-        val session = _browserSession ?: return false
-        session.goForward()
+        browserSession.goForward()
         return true
     }
 
@@ -70,10 +62,10 @@ class BrowserShellViewModel(
         }
     }
 
-    private fun observeBrowserSession(session: BrowserSession): Job {
+    private fun observeBrowserSession(): Job {
         return viewModelScope.launch {
             launch {
-                session.activeUrl.collect { url ->
+                browserSession.activeUrl.collect { url ->
                     _uiState.update {
                         it.copy(inputUrl = url ?: "")
                     }
@@ -81,7 +73,7 @@ class BrowserShellViewModel(
             }
 
             launch {
-                session.canGoForward.collect { canGoForward ->
+                browserSession.canGoForward.collect { canGoForward ->
                     _uiState.update {
                         it.copy(canGoForward = canGoForward)
                     }

@@ -1,12 +1,12 @@
 package com.dwlhm.browser
 
 import com.dwlhm.navigation.api.RouteRegistrar
+import com.dwlhm.tabmanager.api.TabCoordinator
 import java.net.URLDecoder
 
 fun registerBrowserShell(
     routeRegistrar: RouteRegistrar,
-    tabManager: TabManager,
-    viewHost: BrowserViewHost,
+    tabCoordinator: TabCoordinator,
 ) {
     routeRegistrar.register(
         route = "browser?url={url}",
@@ -24,8 +24,7 @@ fun registerBrowserShell(
                 onGoToHome = {
                     navController.navigate("home")
                 },
-                tabManager,
-                viewHost
+                tabCoordinator = tabCoordinator
             )
         }
     )

@@ -1,6 +1,7 @@
 package com.dwlhm.tabmanager.api
 
 import com.dwlhm.browser.BrowserSession
+import com.dwlhm.browser.BrowserViewHost
 import com.dwlhm.browser.TabManager
 
 class BackgroundTabManager: TabManager {
@@ -22,11 +23,14 @@ class BackgroundTabManager: TabManager {
         currentTab = null
     }
 
-    override fun attach(view: Any) {
-        // noop -- background tab manager tidak perlu attach view
-    }
-
-    override fun detach() {
-        // noop -- dari awal tidak ada view yang diattach
+    override fun provideViewHost(): BrowserViewHost {
+        return object : BrowserViewHost {
+            override fun attach(view: Any) {
+                // noop -- background tab manager tidak perlu attach view
+            }
+            override fun detach() {
+                // noop -- dari awal tidak ada view yang diattach
+            }
+        }
     }
 }

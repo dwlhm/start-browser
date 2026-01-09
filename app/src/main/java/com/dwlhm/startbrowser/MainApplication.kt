@@ -5,10 +5,12 @@ import android.app.Application
 import android.content.Context
 import android.os.Process
 import com.dwlhm.browser.BrowserRuntime
-import com.dwlhm.browser.BrowserViewHost
-import com.dwlhm.browser.TabManager
 import com.dwlhm.browser.api.BrowserRuntimeController
+import com.dwlhm.tabmanager.api.BackgroundTabManager
 import com.dwlhm.tabmanager.api.DefaultTabManager
+import com.dwlhm.tabmanager.api.TabCoordinator
+import com.dwlhm.tabmanager.api.TabManagerRegistry
+import com.dwlhm.tabmanager.api.TabMode
 import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp
@@ -16,10 +18,7 @@ class MainApplication: Application() {
     var browserRuntime: BrowserRuntime? = null
         private set
 
-    var tabManager: TabManager? = null
-        private set
-
-    var browserViewHost: BrowserViewHost? = null
+    var tabCoordinator: TabCoordinator? = null
         private set
 
     override fun onCreate() {
@@ -29,8 +28,18 @@ class MainApplication: Application() {
         // Child processes (content, gpu, socket) should NOT create their own runtime
         if (isMainProcess()) {
             browserRuntime = BrowserRuntimeController(this)
-            tabManager = DefaultTabManager(browserRuntime!!)
-            browserViewHost = tabManager
+            
+            val defaultTabManager = DefaultTabManager(browserRuntime!!)
+            val backgroundTabManager = BackgroundTabManager()
+
+            val tabRegistry = TabManagerRegistry(
+                managers = mapOf(
+                    TabMode.DEFAULT to defaultTabManager,
+                    TabMode.BACKGROUND to backgroundTabManager,
+                )
+            )
+
+            tabCoordinator = TabCoordinator(tabRegistry)
         }
     }
 

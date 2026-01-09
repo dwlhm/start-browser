@@ -8,11 +8,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.navigation.compose.rememberNavController
-import com.dwlhm.browser.BrowserRuntime
-import com.dwlhm.browser.api.BrowserRuntimeController
 import com.dwlhm.browser.registerBrowserShell
 import com.dwlhm.data.datastore.onboarding.OnboardingDatastore
-import com.dwlhm.gecko.api.GeckoBrowserRuntime
 import com.dwlhm.home.api.registerHomeScreen
 import com.dwlhm.navigation.api.AppNavHost
 import com.dwlhm.navigation.api.RouteRegistrar
@@ -46,17 +43,14 @@ fun MainScreen(
 
     val didRegister = remember { mutableStateOf(false) }
 
-    // Only register routes in main process where these are initialized
-    val tabManager = app.tabManager
-    val viewHost = app.browserViewHost
+    val tabCoordinator = app.tabCoordinator
 
-    if (!didRegister.value && tabManager != null && viewHost != null) {
+    if (!didRegister.value && tabCoordinator != null) {
         registerHomeScreen(routeRegistrar)
         registerOnboardingScreen(routeRegistrar)
         registerBrowserShell(
             routeRegistrar = routeRegistrar,
-            tabManager = tabManager,
-            viewHost = viewHost,
+            tabCoordinator = tabCoordinator,
         )
         didRegister.value = true
     }

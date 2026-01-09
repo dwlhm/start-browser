@@ -4,36 +4,37 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import com.dwlhm.tabmanager.api.TabCoordinator
+import com.dwlhm.tabmanager.api.TabMode
 
 @Composable
 fun BrowserShellRoute(
     initialUrl: String?,
     onNavigateUp: () -> Unit,
     onGoToHome: () -> Unit,
-    tabManager: TabManager,
-    viewHost: BrowserViewHost,
+    tabCoordinator: TabCoordinator,
+    tabMode: TabMode = TabMode.DEFAULT,
 ) {
-    val viewModel: BrowserShellViewModel = remember {
-        BrowserShellViewModel(
-            tabManager = tabManager
-        )
+    val tabHandle = remember { tabCoordinator.activateTab(tabMode) }
+
+    val viewModel = remember {
+        BrowserShellViewModel(browserSession = tabHandle.session)
     }
 
     LaunchedEffect(Unit) {
-        viewModel.onShellReady()
-        viewModel.init(initialUrl)
+        viewModel.loadInitialUrl(initialUrl)
     }
 
-    DisposableEffect(Unit) {
+    DisposableEffect(tabHandle) {
         onDispose {
-            viewModel.onShellGone()
+            tabCoordinator.deactivateTab(tabHandle)
         }
     }
 
     BrowserShell(
-        onNavigateUp,
-        onGoToHome,
-        viewModel,
-        viewHost
+        onNavigateUp = onNavigateUp,
+        onGoToHome = onGoToHome,
+        viewModel = viewModel,
+        viewHost = tabHandle.viewHost
     )
 }
