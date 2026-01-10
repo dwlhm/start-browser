@@ -15,12 +15,16 @@ class DefaultTabManager(
         return _currentTab
     }
 
-    override fun acquire(): BrowserSession {
-        if (_currentTab != null) return _currentTab!!
-
+    override fun newSession(): BrowserSession {
         val browserSession = browserRuntime.createSession()
         _currentTab = browserSession
         return browserSession
+    }
+
+    override fun acquire(): BrowserSession {
+        if (_currentTab != null) return _currentTab!!
+
+        return this@DefaultTabManager.newSession()
     }
 
     override fun acquire(browserSession: BrowserSession) {

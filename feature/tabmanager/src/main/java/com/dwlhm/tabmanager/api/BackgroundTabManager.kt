@@ -10,6 +10,11 @@ class BackgroundTabManager: TabManager {
     override fun active(): BrowserSession? {
         return currentTab
     }
+
+    override fun newSession(): BrowserSession {
+        error("BackgroundTabManager tidak membuat session baru")
+    }
+
     override fun acquire(): BrowserSession {
         error("BackgroundTabManager tidak membuat session baru")
     }

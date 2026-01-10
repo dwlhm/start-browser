@@ -9,6 +9,7 @@ import com.dwlhm.browser.api.BrowserRuntimeController
 import com.dwlhm.tabmanager.api.BackgroundTabManager
 import com.dwlhm.tabmanager.api.DefaultTabManager
 import com.dwlhm.tabmanager.api.TabCoordinator
+import com.dwlhm.tabmanager.api.TabListCoordinator
 import com.dwlhm.tabmanager.api.TabManagerRegistry
 import com.dwlhm.tabmanager.api.TabMode
 import dagger.hilt.android.HiltAndroidApp
@@ -19,6 +20,9 @@ class MainApplication: Application() {
         private set
 
     var tabCoordinator: TabCoordinator? = null
+        private set
+
+    var tabListCoordinator: TabListCoordinator? = null
         private set
 
     override fun onCreate() {
@@ -40,6 +44,7 @@ class MainApplication: Application() {
             )
 
             tabCoordinator = TabCoordinator(tabRegistry)
+            tabListCoordinator = TabListCoordinator(tabRegistry, TabMode.DEFAULT)
         }
     }
 

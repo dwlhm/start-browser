@@ -3,31 +3,41 @@ package com.dwlhm.browser
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import com.dwlhm.tabmanager.api.TabCoordinator
-import com.dwlhm.tabmanager.api.TabMode
+import com.dwlhm.tabmanager.api.TabListCoordinator
 
 @Composable
 fun BrowserShellRoute(
     initialUrl: String?,
     onNavigateUp: () -> Unit,
     onGoToHome: () -> Unit,
-    tabCoordinator: TabCoordinator,
-    tabMode: TabMode = TabMode.DEFAULT,
+    tabListCoordinator: TabListCoordinator,
 ) {
-    val tabHandle = remember { tabCoordinator.activateTab(tabMode) }
+    val activeTab by tabListCoordinator.selectedTab.collectAsState()
 
-    val viewModel = remember {
-        BrowserShellViewModel(browserSession = tabHandle.session)
+    // Create tab if needed (in LaunchedEffect to avoid side-effect in composition)
+    LaunchedEffect(Unit) {
+        if (tabListCoordinator.selectedTab.value == null) {
+            tabListCoordinator.createTab()
+        }
     }
 
-    LaunchedEffect(Unit) {
+    // Wait for tab to be ready
+    val currentTab = activeTab ?: return
+
+    val viewModel = remember(currentTab.id) {
+        BrowserShellViewModel(browserSession = currentTab.session)
+    }
+
+    LaunchedEffect(currentTab.id) {
         viewModel.loadInitialUrl(initialUrl)
     }
 
-    DisposableEffect(tabHandle) {
+    DisposableEffect(currentTab.id) {
         onDispose {
-            tabCoordinator.deactivateTab(tabHandle)
+            tabListCoordinator.closeTab(currentTab.id)
         }
     }
 
@@ -35,6 +45,6 @@ fun BrowserShellRoute(
         onNavigateUp = onNavigateUp,
         onGoToHome = onGoToHome,
         viewModel = viewModel,
-        viewHost = tabHandle.viewHost
+        viewHost = currentTab.viewHost
     )
 }

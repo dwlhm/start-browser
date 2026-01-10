@@ -43,8 +43,7 @@ class BrowserShellViewModel(
     }
 
     fun goBack(): Boolean {
-        browserSession.goBack()
-        return true
+        return browserSession.goBack()
     }
 
     fun goForward(): Boolean {

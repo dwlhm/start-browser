@@ -2,11 +2,15 @@ package com.dwlhm.browser
 
 import com.dwlhm.navigation.api.RouteRegistrar
 import com.dwlhm.tabmanager.api.TabCoordinator
+import com.dwlhm.tabmanager.api.TabHandle
+import com.dwlhm.tabmanager.api.TabListCoordinator
+import kotlinx.coroutines.flow.asStateFlow
 import java.net.URLDecoder
+import androidx.compose.runtime.collectAsState
 
 fun registerBrowserShell(
     routeRegistrar: RouteRegistrar,
-    tabCoordinator: TabCoordinator,
+    tabListCoordinator: TabListCoordinator,
 ) {
     routeRegistrar.register(
         route = "browser?url={url}",
@@ -24,7 +28,7 @@ fun registerBrowserShell(
                 onGoToHome = {
                     navController.navigate("home")
                 },
-                tabCoordinator = tabCoordinator
+                tabListCoordinator = tabListCoordinator
             )
         }
     )
