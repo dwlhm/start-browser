@@ -22,7 +22,7 @@ fun registerBrowserShell(
                     navController.popBackStack()
                 },
                 onGoToHome = {
-                    navController.navigate("home")
+                    navController.navigate("dashboard-session")
                 },
                 tabSessionManager = tabSessionManager
             )

@@ -9,8 +9,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.navigation.compose.rememberNavController
 import com.dwlhm.browser.registerBrowserShell
+import com.dwlhm.dashboardsession.registerDashboardSessionShell
 import com.dwlhm.data.datastore.onboarding.OnboardingDatastore
-import com.dwlhm.home.api.registerHomeScreen
 import com.dwlhm.navigation.api.AppNavHost
 import com.dwlhm.navigation.api.RouteRegistrar
 import com.dwlhm.onboarding.api.registerOnboardingScreen
@@ -43,14 +43,14 @@ fun MainScreen(
 
     val didRegister = remember { mutableStateOf(false) }
 
-    val tabListCoordinator = app.tabSessionManager
+    val tabSessionManager = app.tabSessionManager
 
-    if (!didRegister.value &&  tabListCoordinator != null) {
-        registerHomeScreen(routeRegistrar)
+    if (!didRegister.value &&  tabSessionManager != null) {
+        registerDashboardSessionShell(routeRegistrar, tabSessionManager = tabSessionManager)
         registerOnboardingScreen(routeRegistrar)
         registerBrowserShell(
             routeRegistrar = routeRegistrar,
-            tabSessionManager = tabListCoordinator,
+            tabSessionManager = tabSessionManager,
         )
         didRegister.value = true
     }
@@ -61,7 +61,7 @@ fun MainScreen(
         AppNavHost(
             navController,
             routeRegistrar,
-            startDestination = if (hasOnboarded == true) "home" else "onboarding"
+            startDestination = if (hasOnboarded == true) "dashboard-session" else "onboarding"
         )
     }
 }

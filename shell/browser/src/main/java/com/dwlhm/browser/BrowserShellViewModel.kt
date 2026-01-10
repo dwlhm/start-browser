@@ -3,6 +3,7 @@ package com.dwlhm.browser
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dwlhm.browser.api.BrowserUiState
+import com.dwlhm.utils.normalizeUrl
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -32,8 +33,7 @@ class BrowserShellViewModel(
     }
 
     fun onUrlSubmit(inputUrl: String) {
-        val url = normalizeUrl(inputUrl)
-        browserSession.loadUrl(url)
+        browserSession.loadUrl(normalizeUrl(inputUrl))
     }
 
     fun onUrlChange(newValue: String) {
@@ -49,16 +49,6 @@ class BrowserShellViewModel(
     fun goForward(): Boolean {
         browserSession.goForward()
         return true
-    }
-
-    private fun normalizeUrl(inputUrl: String): String {
-        val trimmed = inputUrl.trim()
-        return when {
-            trimmed.startsWith("http") -> trimmed
-            trimmed.contains(" ") ->
-                "https://www.google.com/search?q=${trimmed.replace(" ", "+")}"
-            else -> "https://$trimmed"
-        }
     }
 
     private fun observeBrowserSession(): Job {

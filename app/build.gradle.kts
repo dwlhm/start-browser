@@ -80,4 +80,5 @@ dependencies {
     implementation(project(":feature:tabmanager"))
 
     implementation(project(":shell:browser"))
+    implementation(project(":shell:dashboardsession"))
 }

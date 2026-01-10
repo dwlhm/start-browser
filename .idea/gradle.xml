@@ -18,6 +18,7 @@
             <option value="$PROJECT_DIR$/core/domain" />
             <option value="$PROJECT_DIR$/core/navigation" />
             <option value="$PROJECT_DIR$/core/ui" />
+            <option value="$PROJECT_DIR$/core/utils" />
             <option value="$PROJECT_DIR$/core/webview" />
             <option value="$PROJECT_DIR$/engine" />
             <option value="$PROJECT_DIR$/engine/gecko" />
@@ -28,6 +29,7 @@
             <option value="$PROJECT_DIR$/feature/tabmanager" />
             <option value="$PROJECT_DIR$/shell" />
             <option value="$PROJECT_DIR$/shell/browser" />
+            <option value="$PROJECT_DIR$/shell/dashboardsession" />
           </set>
         </option>
       </GradleProjectSettings>

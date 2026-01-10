@@ -3,17 +3,12 @@ plugins {
     alias(libs.plugins.kotlin.android)
 
     alias(libs.plugins.kotlin.ksp)
-    alias(libs.plugins.dagger.hilt)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.kotlin.compose)
 }
 
-hilt {
-    enableAggregatingTask = false
-}
-
 android {
-    namespace = "com.dwlhm.browser"
+    namespace = "com.dwlhm.dashboardsession"
     compileSdk = 36
 
     defaultConfig {
@@ -47,16 +42,11 @@ dependencies {
     implementation(project(":core:browser"))
     implementation(project(":core:utils"))
 
-    implementation(project(":feature:browser"))
     implementation(project(":feature:tabmanager"))
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.compose.runtime)
-
-    implementation(libs.hilt.android)
-    ksp(libs.hilt.compiler)
     implementation(libs.hilt.navigation.compose)
-
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.foundation)
     implementation(libs.androidx.activity.compose)
