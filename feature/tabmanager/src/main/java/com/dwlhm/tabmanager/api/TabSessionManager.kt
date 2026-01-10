@@ -1,12 +1,10 @@
 package com.dwlhm.tabmanager.api
 
-import com.dwlhm.browser.TabManager
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import java.util.UUID
 
-class TabListCoordinator(
+class TabSessionManager(
     private val tabRegistry: TabManagerRegistry,
     private val tabMode: TabMode
 ) {

@@ -2,16 +2,14 @@ package com.dwlhm.startbrowser
 
 import android.app.ActivityManager
 import android.app.Application
-import android.content.Context
 import android.os.Process
 import com.dwlhm.browser.BrowserRuntime
 import com.dwlhm.browser.api.BrowserRuntimeController
 import com.dwlhm.tabmanager.api.BackgroundTabManager
 import com.dwlhm.tabmanager.api.DefaultTabManager
-import com.dwlhm.tabmanager.api.TabCoordinator
-import com.dwlhm.tabmanager.api.TabListCoordinator
 import com.dwlhm.tabmanager.api.TabManagerRegistry
 import com.dwlhm.tabmanager.api.TabMode
+import com.dwlhm.tabmanager.api.TabSessionManager
 import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp
@@ -19,10 +17,7 @@ class MainApplication: Application() {
     var browserRuntime: BrowserRuntime? = null
         private set
 
-    var tabCoordinator: TabCoordinator? = null
-        private set
-
-    var tabListCoordinator: TabListCoordinator? = null
+    var tabSessionManager: TabSessionManager? = null
         private set
 
     override fun onCreate() {
@@ -43,14 +38,13 @@ class MainApplication: Application() {
                 )
             )
 
-            tabCoordinator = TabCoordinator(tabRegistry)
-            tabListCoordinator = TabListCoordinator(tabRegistry, TabMode.DEFAULT)
+            tabSessionManager = TabSessionManager(tabRegistry, TabMode.DEFAULT)
         }
     }
 
     private fun isMainProcess(): Boolean {
         val pid = Process.myPid()
-        val activityManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        val activityManager = getSystemService(ACTIVITY_SERVICE) as ActivityManager
         return activityManager.runningAppProcesses?.any { processInfo ->
             processInfo.pid == pid && processInfo.processName == packageName
         } ?: false

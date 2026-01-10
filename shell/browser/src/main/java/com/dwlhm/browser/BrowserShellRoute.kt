@@ -6,21 +6,21 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import com.dwlhm.tabmanager.api.TabListCoordinator
+import com.dwlhm.tabmanager.api.TabSessionManager
 
 @Composable
 fun BrowserShellRoute(
     initialUrl: String?,
     onNavigateUp: () -> Unit,
     onGoToHome: () -> Unit,
-    tabListCoordinator: TabListCoordinator,
+    tabSessionManager: TabSessionManager,
 ) {
-    val activeTab by tabListCoordinator.selectedTab.collectAsState()
+    val activeTab by tabSessionManager.selectedTab.collectAsState()
 
     // Create tab if needed (in LaunchedEffect to avoid side-effect in composition)
     LaunchedEffect(Unit) {
-        if (tabListCoordinator.selectedTab.value == null) {
-            tabListCoordinator.createTab()
+        if (tabSessionManager.selectedTab.value == null) {
+            tabSessionManager.createTab()
         }
     }
 
@@ -37,7 +37,7 @@ fun BrowserShellRoute(
 
     DisposableEffect(currentTab.id) {
         onDispose {
-            tabListCoordinator.closeTab(currentTab.id)
+            tabSessionManager.closeTab(currentTab.id)
         }
     }
 

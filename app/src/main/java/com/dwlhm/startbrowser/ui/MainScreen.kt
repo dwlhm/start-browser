@@ -43,14 +43,14 @@ fun MainScreen(
 
     val didRegister = remember { mutableStateOf(false) }
 
-    val tabListCoordinator = app.tabListCoordinator
+    val tabListCoordinator = app.tabSessionManager
 
     if (!didRegister.value &&  tabListCoordinator != null) {
         registerHomeScreen(routeRegistrar)
         registerOnboardingScreen(routeRegistrar)
         registerBrowserShell(
             routeRegistrar = routeRegistrar,
-            tabListCoordinator = tabListCoordinator,
+            tabSessionManager = tabListCoordinator,
         )
         didRegister.value = true
     }
