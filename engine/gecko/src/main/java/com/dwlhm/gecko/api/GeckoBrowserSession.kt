@@ -19,7 +19,7 @@ class GeckoBrowserSession(
     private val _currentTitle = MutableStateFlow<String?>(null)
     private val _canGoBack = MutableStateFlow(false)
     private val _canGoForward = MutableStateFlow(false)
-
+    
     override var sessionCallback: BrowserSessionCallback? = null
     
     override fun setCallback(callback: BrowserSessionCallback) {
@@ -84,6 +84,10 @@ class GeckoBrowserSession(
         return false
     }
 
+    override fun destroy() {
+        session.stop()
+    }
+
     init {
         session.navigationDelegate = object : GeckoSession.NavigationDelegate {
             override fun onCanGoBack(session: GeckoSession, canGoBack: Boolean) {
@@ -141,7 +145,15 @@ class GeckoBrowserSession(
 
         session.mediaSessionDelegate = object : MediaSession.Delegate {
             override fun onActivated(session: GeckoSession, mediaSession: MediaSession) {
-                sessionCallback?.onMediaActivated(GeckoMediaSession(mediaSession))
+                sessionCallback?.onMediaActivated(
+                    GeckoMediaSession(
+                        mediaSession
+                    )
+                )
+            }
+
+            override fun onDeactivated(session: GeckoSession, mediaSession: MediaSession) {
+                sessionCallback?.onMediaDeactivated()
             }
 
             override fun onMetadata(
@@ -149,27 +161,25 @@ class GeckoBrowserSession(
                 mediaSession: MediaSession,
                 meta: MediaSession.Metadata
             ) {
-                val artwork = meta.artwork
-
-                if (artwork == null) {
+                if (meta.artwork == null) {
                     sessionCallback?.onMediaMetadataChanged(
                         BrowserMediaMetadata(
-                            title = meta.title,
-                            artist = meta.artist,
-                            album = meta.album,
-                            artwork = null
+                            meta.album,
+                            meta.artist,
+                            null,
+                            meta.title
                         )
                     )
                     return
                 }
 
-                artwork.getBitmap(128).accept { bitmap ->
+                meta.artwork!!.getBitmap(128).accept { bitmap ->
                     sessionCallback?.onMediaMetadataChanged(
                         BrowserMediaMetadata(
-                            title = meta.title,
-                            artist = meta.artist,
-                            album = meta.album,
-                            artwork = bitmap
+                            meta.album,
+                            meta.artist,
+                            bitmap,
+                            meta.title,
                         )
                     )
                 }
@@ -191,10 +201,6 @@ class GeckoBrowserSession(
                 sessionCallback?.onMediaStateChanged(
                     BrowserMediaState.STOP
                 )
-            }
-
-            override fun onDeactivated(session: GeckoSession, mediaSession: MediaSession) {
-                sessionCallback?.onMediaDeactivated()
             }
         }
     }

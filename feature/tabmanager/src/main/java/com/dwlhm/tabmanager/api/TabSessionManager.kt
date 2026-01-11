@@ -14,6 +14,7 @@ import com.dwlhm.event.TabCreatedEvent
 import com.dwlhm.event.TabInfoChangedEvent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -25,9 +26,11 @@ class TabSessionManager(
     private val tabMode: TabMode,
     private val eventDispatcher: EventDispatcher
 ) {
-    private val scope = CoroutineScope(Dispatchers.Main)
+    private val job = SupervisorJob()
+    private val scope = CoroutineScope(Dispatchers.Main + job)
     val allTabs = MutableStateFlow<MutableMap<String, TabHandle>>(mutableMapOf())
     val selectedTab = MutableStateFlow<TabHandle?>(null)
+    private var lastSelectedTab: TabHandle? = null
 
     init {
         observeSelectedTab()
@@ -79,26 +82,35 @@ class TabSessionManager(
     }
 
     fun closeTab(id: String) {
-        allTabs.update { tabs ->
-            tabs.remove(id)
-            tabs
-        }
-
-        // Clear selection if the closed tab was selected
         if (selectedTab.value?.id == id) {
-            selectedTab.update { null }
-        }
+            selectedTab.value?.session?.destroy()
 
-        eventDispatcher.dispatch(
-            TabClosedEvent(
-                tabId = id
+            allTabs.update { tabs ->
+                tabs.remove(id)
+                tabs
+            }
+
+            selectedTab.update { null }
+
+            eventDispatcher.dispatch(
+                TabClosedEvent(
+                    tabId = id
+                )
             )
-        )
+        }
     }
 
     private fun observeSelectedTab() {
         selectedTab.onEach { tabHandle ->
-            tabHandle?.session?.sessionCallback = object : BrowserSessionCallback {
+
+            lastSelectedTab?.session?.sessionCallback = null
+
+            if (tabHandle == null) {
+                lastSelectedTab = null
+                return@onEach
+            }
+
+            tabHandle.session.sessionCallback = object : BrowserSessionCallback {
                 private var _mediaSession: BrowserMediaSession? = null
 
                 override fun onTabInfoChanged(title: String, url: String) {

@@ -18,4 +18,5 @@ interface BrowserSession {
     fun stop()
     fun goBack(): Boolean
     fun goForward(): Boolean
+    fun destroy()
 }

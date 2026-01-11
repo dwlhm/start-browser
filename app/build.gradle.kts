@@ -64,6 +64,8 @@ dependencies {
 
     implementation(libs.geckoview)
 
+    implementation(libs.androidx.media)
+
     implementation(project(":core:browser"))
     implementation(project(":core:navigation"))
     implementation(project(":feature:home"))

@@ -15,13 +15,17 @@ import com.dwlhm.tabmanager.api.DefaultTabManager
 import com.dwlhm.tabmanager.api.TabManagerRegistry
 import com.dwlhm.tabmanager.api.TabMode
 import com.dwlhm.tabmanager.api.TabSessionManager
+import com.dwlhm.startbrowser.services.MediaPlaybackManager
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 
 @HiltAndroidApp
 class MainApplication: Application() {
-    private val scope = CoroutineScope(Dispatchers.Main)
+    // Use SupervisorJob so child failures don't cancel the parent scope
+    private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
     val database: AppDatabase by lazy {
         Room.databaseBuilder(
@@ -51,6 +55,7 @@ class MainApplication: Application() {
 
     private var sessionListener: SessionListener? = null
     private var mediaEventListener: MediaEventListener? = null
+    private var mediaPlaybackManager: MediaPlaybackManager? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -58,14 +63,29 @@ class MainApplication: Application() {
         // Only initialize GeckoRuntime in the main process
         // Child processes (content, gpu, socket) should NOT create their own runtime
         if (isMainProcess()) {
-            sessionListener = SessionListener(database.sessionDao(), scope).apply {
+            sessionListener = SessionListener(database.sessionDao(), applicationScope).apply {
                 observeEvent()
             }
 
-            mediaEventListener = MediaEventListener(scope).apply {
+            mediaEventListener = MediaEventListener(applicationScope).apply {
                 observeEvent()
             }
+
+            // Initialize background media playback manager
+            mediaPlaybackManager = MediaPlaybackManager(
+                context = applicationContext,
+                scope = applicationScope
+            ).apply {
+                initialize()
+            }
         }
+    }
+
+    override fun onTerminate() {
+        super.onTerminate()
+        // Clean up resources to prevent memory leaks
+        mediaPlaybackManager?.destroy()
+        applicationScope.cancel()
     }
 
     private fun isMainProcess(): Boolean {
