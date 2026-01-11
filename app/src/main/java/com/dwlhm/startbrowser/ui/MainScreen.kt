@@ -44,9 +44,15 @@ fun MainScreen(
     val didRegister = remember { mutableStateOf(false) }
 
     val tabSessionManager = app.tabSessionManager
+    val sessions = app.database.sessionDao()
 
-    if (!didRegister.value &&  tabSessionManager != null) {
-        registerDashboardSessionShell(routeRegistrar, tabSessionManager = tabSessionManager)
+    if (!didRegister.value) {
+        registerDashboardSessionShell(
+            routeRegistrar = routeRegistrar,
+            tabSessionManager = tabSessionManager,
+            sessions = sessions.getAll(),
+            removeSession = sessions::delete
+        )
         registerOnboardingScreen(routeRegistrar)
         registerBrowserShell(
             routeRegistrar = routeRegistrar,

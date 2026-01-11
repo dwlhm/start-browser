@@ -7,12 +7,17 @@ import com.dwlhm.browser.BrowserRuntime
 import com.dwlhm.browser.BrowserSession
 import org.mozilla.geckoview.GeckoRuntime
 import org.mozilla.geckoview.GeckoSession
+import org.mozilla.geckoview.GeckoSessionSettings
 
 class GeckoBrowserRuntime private constructor(
     private val geckoRuntime: GeckoRuntime
 ): BrowserRuntime {
     override fun createSession(): BrowserSession {
-        val geckoSession = GeckoSession()
+        val settings = GeckoSessionSettings.Builder()
+            .useTrackingProtection(true)
+            .build()
+
+        val geckoSession = GeckoSession(settings)
 
         if (Looper.myLooper() == Looper.getMainLooper()) {
             geckoSession.open(geckoRuntime)

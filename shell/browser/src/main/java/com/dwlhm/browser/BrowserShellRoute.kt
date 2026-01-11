@@ -17,7 +17,7 @@ fun BrowserShellRoute(
 ) {
     val activeTab by tabSessionManager.selectedTab.collectAsState()
 
-    // Create tab if needed (in LaunchedEffect to avoid side-effect in composition)
+    // Create tab if needed
     LaunchedEffect(Unit) {
         if (tabSessionManager.selectedTab.value == null) {
             tabSessionManager.createTab()

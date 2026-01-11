@@ -8,6 +8,9 @@ interface BrowserSession {
     val canGoBack: StateFlow<Boolean>
     val canGoForward: StateFlow<Boolean>
 
+    var sessionCallback: BrowserSessionCallback?
+    fun setCallback(callback: BrowserSessionCallback)
+
     fun attachToView(view: Any)
     fun detachFromView()
     fun loadUrl(url: String)

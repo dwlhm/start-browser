@@ -1,14 +1,11 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.ksp)
-    alias(libs.plugins.dagger.hilt)
-    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.kotlin.compose)
 }
 
 android {
-    namespace = "com.dwlhm.tabmanager"
+    namespace = "com.dwlhm.sessions"
     compileSdk = 36
 
     defaultConfig {
@@ -37,20 +34,19 @@ android {
 }
 
 dependencies {
+    implementation(project(":core:event"))
+    implementation(project(":core:data"))
+    implementation(project(":core:ui"))
+
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.compose.runtime)
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.foundation)
 
-    implementation(libs.hilt.android)
-    ksp(libs.hilt.compiler)
-
-    implementation(libs.geckoview)
-
     implementation(libs.androidx.core.ktx)
-
-    implementation(project(":core:webview"))
-    implementation(project(":core:datastore"))
-    implementation(project(":core:browser"))
-    implementation(project(":core:event"))
+    implementation(libs.androidx.appcompat)
+    implementation(libs.material)
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
 }

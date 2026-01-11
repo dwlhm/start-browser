@@ -73,11 +73,13 @@ dependencies {
     implementation(project(":core:data"))
     implementation(project(":core:domain"))
     implementation(project(":core:ui"))
+    implementation(project(":core:event"))
 
     implementation(project(":core:webview"))
     implementation(project(":engine:gecko"))
 
     implementation(project(":feature:tabmanager"))
+    implementation(project(":feature:sessions"))
 
     implementation(project(":shell:browser"))
     implementation(project(":shell:dashboardsession"))

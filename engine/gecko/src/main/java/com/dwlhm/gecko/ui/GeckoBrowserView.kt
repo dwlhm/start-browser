@@ -6,7 +6,6 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
-import com.dwlhm.browser.BrowserSession
 import com.dwlhm.browser.BrowserViewHost
 import org.mozilla.geckoview.GeckoView
 

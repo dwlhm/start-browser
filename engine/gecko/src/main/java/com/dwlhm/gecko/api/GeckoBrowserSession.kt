@@ -1,7 +1,7 @@
 package com.dwlhm.gecko.api
 
-import android.util.Log
 import com.dwlhm.browser.BrowserSession
+import com.dwlhm.browser.BrowserSessionCallback
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import org.mozilla.geckoview.AllowOrDeny
@@ -10,12 +10,18 @@ import org.mozilla.geckoview.GeckoSession
 import org.mozilla.geckoview.GeckoView
 
 class GeckoBrowserSession(
-    private val session: GeckoSession
+    private val session: GeckoSession,
 ): BrowserSession {
     private val _currentUrl = MutableStateFlow<String?>(null)
     private val _currentTitle = MutableStateFlow<String?>(null)
     private val _canGoBack = MutableStateFlow(false)
     private val _canGoForward = MutableStateFlow(false)
+
+    override var sessionCallback: BrowserSessionCallback? = null
+    
+    override fun setCallback(callback: BrowserSessionCallback) {
+        sessionCallback = callback
+    }
 
     override val activeUrl: StateFlow<String?>
         get() = _currentUrl
@@ -89,17 +95,29 @@ class GeckoBrowserSession(
                 session: GeckoSession,
                 request: GeckoSession.NavigationDelegate.LoadRequest
             ): GeckoResult<AllowOrDeny?>? {
-                Log.d("url", request.uri)
-                _currentUrl.value = request.uri
-                // Allow all navigation requests
-                return null
+                val url = request.uri
+                // TODO: Implement proper adblock rules (EasyList)
+                val deny = url.contains("ads") || url.contains("tracker")
+                return if (deny) {
+                    GeckoResult.deny()   // <-- THIS
+                } else {
+                    null  // allow
+                }
             }
         }
+
         session.contentDelegate = object : GeckoSession.ContentDelegate {
             override fun onTitleChange(session: GeckoSession, title: String?) {
                 _currentTitle.value = title
             }
         }
+
+        session.progressDelegate = object : GeckoSession.ProgressDelegate {
+            override fun onPageStart(session: GeckoSession, url: String) {
+                _currentUrl.value = url
+            }
+        }
+
         session.historyDelegate = object : GeckoSession.HistoryDelegate {
             override fun onHistoryStateChange(
                 session: GeckoSession,
@@ -110,6 +128,10 @@ class GeckoBrowserSession(
                     val currentItem = historyList[currentIndex]
                     _currentUrl.value = currentItem.uri
                     _currentTitle.value = currentItem.title
+                    sessionCallback?.onTabInfoChanged(
+                        currentItem.title,
+                        currentItem.uri
+                    )
                 }
             }
         }

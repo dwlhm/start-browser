@@ -3,22 +3,52 @@ package com.dwlhm.startbrowser
 import android.app.ActivityManager
 import android.app.Application
 import android.os.Process
+import androidx.room.Room
 import com.dwlhm.browser.BrowserRuntime
 import com.dwlhm.browser.api.BrowserRuntimeController
+import com.dwlhm.data.api.AppDatabase
+import com.dwlhm.event.EventDispatcher
+import com.dwlhm.sessions.api.SessionListener
 import com.dwlhm.tabmanager.api.BackgroundTabManager
 import com.dwlhm.tabmanager.api.DefaultTabManager
 import com.dwlhm.tabmanager.api.TabManagerRegistry
 import com.dwlhm.tabmanager.api.TabMode
 import com.dwlhm.tabmanager.api.TabSessionManager
 import dagger.hilt.android.HiltAndroidApp
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 
 @HiltAndroidApp
 class MainApplication: Application() {
-    var browserRuntime: BrowserRuntime? = null
-        private set
+    private val scope = CoroutineScope(Dispatchers.Main)
 
-    var tabSessionManager: TabSessionManager? = null
-        private set
+    val database: AppDatabase by lazy {
+        Room.databaseBuilder(
+            this,
+            AppDatabase::class.java,
+            "browser.db"
+        )
+            .fallbackToDestructiveMigration()
+            .build()
+    }
+
+    val browserRuntime: BrowserRuntime by lazy { BrowserRuntimeController(this) }
+    val tabSessionManager: TabSessionManager by lazy {
+        val defaultTabManager = DefaultTabManager(browserRuntime)
+        val backgroundTabManager = BackgroundTabManager()
+
+        val tabRegistry = TabManagerRegistry(
+            managers = mapOf(
+                TabMode.DEFAULT to defaultTabManager,
+                TabMode.BACKGROUND to backgroundTabManager,
+            )
+        )
+
+        TabSessionManager(tabRegistry, TabMode.DEFAULT, eventDispatcher)
+    }
+    val eventDispatcher: EventDispatcher by lazy { EventDispatcher }
+
+    private var sessionListener: SessionListener? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -26,19 +56,9 @@ class MainApplication: Application() {
         // Only initialize GeckoRuntime in the main process
         // Child processes (content, gpu, socket) should NOT create their own runtime
         if (isMainProcess()) {
-            browserRuntime = BrowserRuntimeController(this)
-            
-            val defaultTabManager = DefaultTabManager(browserRuntime!!)
-            val backgroundTabManager = BackgroundTabManager()
-
-            val tabRegistry = TabManagerRegistry(
-                managers = mapOf(
-                    TabMode.DEFAULT to defaultTabManager,
-                    TabMode.BACKGROUND to backgroundTabManager,
-                )
-            )
-
-            tabSessionManager = TabSessionManager(tabRegistry, TabMode.DEFAULT)
+            sessionListener = SessionListener(database.sessionDao(), scope).apply {
+                observeEvent()
+            }
         }
     }
 

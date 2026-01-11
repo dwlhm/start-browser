@@ -16,6 +16,7 @@
             <option value="$PROJECT_DIR$/core/data" />
             <option value="$PROJECT_DIR$/core/datastore" />
             <option value="$PROJECT_DIR$/core/domain" />
+            <option value="$PROJECT_DIR$/core/event" />
             <option value="$PROJECT_DIR$/core/navigation" />
             <option value="$PROJECT_DIR$/core/ui" />
             <option value="$PROJECT_DIR$/core/utils" />
@@ -26,6 +27,7 @@
             <option value="$PROJECT_DIR$/feature/browser" />
             <option value="$PROJECT_DIR$/feature/home" />
             <option value="$PROJECT_DIR$/feature/onboarding" />
+            <option value="$PROJECT_DIR$/feature/sessions" />
             <option value="$PROJECT_DIR$/feature/tabmanager" />
             <option value="$PROJECT_DIR$/shell" />
             <option value="$PROJECT_DIR$/shell/browser" />
