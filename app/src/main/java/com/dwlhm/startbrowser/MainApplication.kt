@@ -8,6 +8,7 @@ import com.dwlhm.browser.BrowserRuntime
 import com.dwlhm.browser.api.BrowserRuntimeController
 import com.dwlhm.data.api.AppDatabase
 import com.dwlhm.event.EventDispatcher
+import com.dwlhm.media.api.MediaEventListener
 import com.dwlhm.sessions.api.SessionListener
 import com.dwlhm.tabmanager.api.BackgroundTabManager
 import com.dwlhm.tabmanager.api.DefaultTabManager
@@ -49,6 +50,7 @@ class MainApplication: Application() {
     val eventDispatcher: EventDispatcher by lazy { EventDispatcher }
 
     private var sessionListener: SessionListener? = null
+    private var mediaEventListener: MediaEventListener? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -57,6 +59,10 @@ class MainApplication: Application() {
         // Child processes (content, gpu, socket) should NOT create their own runtime
         if (isMainProcess()) {
             sessionListener = SessionListener(database.sessionDao(), scope).apply {
+                observeEvent()
+            }
+
+            mediaEventListener = MediaEventListener(scope).apply {
                 observeEvent()
             }
         }

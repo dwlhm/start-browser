@@ -1,7 +1,14 @@
 package com.dwlhm.tabmanager.api
 
+import com.dwlhm.browser.BrowserMediaMetadata
+import com.dwlhm.browser.BrowserMediaSession
+import com.dwlhm.browser.BrowserMediaState
 import com.dwlhm.browser.BrowserSessionCallback
 import com.dwlhm.event.EventDispatcher
+import com.dwlhm.event.MediaActivatedEvent
+import com.dwlhm.event.MediaDeactivatedEvent
+import com.dwlhm.event.MediaMetadataChangedEvent
+import com.dwlhm.event.MediaStateChangedEvent
 import com.dwlhm.event.TabClosedEvent
 import com.dwlhm.event.TabCreatedEvent
 import com.dwlhm.event.TabInfoChangedEvent
@@ -34,10 +41,12 @@ class TabSessionManager(
 
         val currentTabHandle = TabHandle(id, session, viewHost, tabMode)
 
-        eventDispatcher.dispatch(TabCreatedEvent(
-            tabId = id,
-            initialUrl = ""
-        ))
+        eventDispatcher.dispatch(
+            TabCreatedEvent(
+                tabId = id,
+                initialUrl = ""
+            )
+        )
 
         allTabs.update { allTabs ->
             allTabs[id] = currentTabHandle
@@ -80,20 +89,64 @@ class TabSessionManager(
             selectedTab.update { null }
         }
 
-        eventDispatcher.dispatch(TabClosedEvent(
-            tabId = id
-        ))
+        eventDispatcher.dispatch(
+            TabClosedEvent(
+                tabId = id
+            )
+        )
     }
 
     private fun observeSelectedTab() {
         selectedTab.onEach { tabHandle ->
             tabHandle?.session?.sessionCallback = object : BrowserSessionCallback {
+                private var _mediaSession: BrowserMediaSession? = null
+
                 override fun onTabInfoChanged(title: String, url: String) {
                     eventDispatcher.dispatch(
                         TabInfoChangedEvent(
                             tabId = tabHandle.id,
                             title = title,
                             url = url
+                        )
+                    )
+                }
+
+                override fun onMediaActivated(mediaSession: BrowserMediaSession) {
+                    _mediaSession = mediaSession
+                    eventDispatcher.dispatch(
+                        MediaActivatedEvent(
+                            tabId = tabHandle.id,
+                            mediaSession,
+                        )
+                    )
+                }
+
+                override fun onMediaDeactivated() {
+                    eventDispatcher.dispatch(
+                        MediaDeactivatedEvent(
+                            tabId = tabHandle.id,
+                        )
+                    )
+                }
+
+                override fun onMediaMetadataChanged(mediaMetadata: BrowserMediaMetadata) {
+                    if (_mediaSession == null) return
+                    eventDispatcher.dispatch(
+                        MediaMetadataChangedEvent(
+                            tabId = tabHandle.id,
+                            mediaMetadata = mediaMetadata,
+                            metadataSession = _mediaSession!!
+                        )
+                    )
+                }
+
+                override fun onMediaStateChanged(state: BrowserMediaState) {
+                    if (_mediaSession == null) return
+                    eventDispatcher.dispatch(
+                        MediaStateChangedEvent(
+                            tabId = tabHandle.id,
+                            state = state,
+                            mediaSession = _mediaSession!!
                         )
                     )
                 }

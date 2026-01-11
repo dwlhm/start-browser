@@ -1,10 +1,11 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.compose)
 }
 
 android {
-    namespace = "com.dwlhm.event"
+    namespace = "com.dwlhm.media"
     compileSdk = 36
 
     defaultConfig {
@@ -33,11 +34,19 @@ android {
 }
 
 dependencies {
-    implementation(libs.kotlinx.coroutines.core)
-    
+    implementation(project(":core:event"))
+    implementation(project(":core:browser"))
+    implementation(project(":core:ui"))
+
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.compose.runtime)
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.foundation)
+
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.material)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-
-    implementation(project(":core:browser"))
 }

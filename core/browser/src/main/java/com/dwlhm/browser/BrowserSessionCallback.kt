@@ -6,4 +6,8 @@ package com.dwlhm.browser
  */
 interface BrowserSessionCallback {
     fun onTabInfoChanged(title: String, url: String)
+    fun onMediaActivated(mediaSession: BrowserMediaSession)
+    fun onMediaMetadataChanged(mediaMetadata: BrowserMediaMetadata)
+    fun onMediaStateChanged(state: BrowserMediaState)
+    fun onMediaDeactivated()
 }

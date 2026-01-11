@@ -1,5 +1,7 @@
 package com.dwlhm.gecko.api
 
+import com.dwlhm.browser.BrowserMediaMetadata
+import com.dwlhm.browser.BrowserMediaState
 import com.dwlhm.browser.BrowserSession
 import com.dwlhm.browser.BrowserSessionCallback
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -8,6 +10,7 @@ import org.mozilla.geckoview.AllowOrDeny
 import org.mozilla.geckoview.GeckoResult
 import org.mozilla.geckoview.GeckoSession
 import org.mozilla.geckoview.GeckoView
+import org.mozilla.geckoview.MediaSession
 
 class GeckoBrowserSession(
     private val session: GeckoSession,
@@ -133,6 +136,65 @@ class GeckoBrowserSession(
                         currentItem.uri
                     )
                 }
+            }
+        }
+
+        session.mediaSessionDelegate = object : MediaSession.Delegate {
+            override fun onActivated(session: GeckoSession, mediaSession: MediaSession) {
+                sessionCallback?.onMediaActivated(GeckoMediaSession(mediaSession))
+            }
+
+            override fun onMetadata(
+                session: GeckoSession,
+                mediaSession: MediaSession,
+                meta: MediaSession.Metadata
+            ) {
+                val artwork = meta.artwork
+
+                if (artwork == null) {
+                    sessionCallback?.onMediaMetadataChanged(
+                        BrowserMediaMetadata(
+                            title = meta.title,
+                            artist = meta.artist,
+                            album = meta.album,
+                            artwork = null
+                        )
+                    )
+                    return
+                }
+
+                artwork.getBitmap(128).accept { bitmap ->
+                    sessionCallback?.onMediaMetadataChanged(
+                        BrowserMediaMetadata(
+                            title = meta.title,
+                            artist = meta.artist,
+                            album = meta.album,
+                            artwork = bitmap
+                        )
+                    )
+                }
+            }
+
+            override fun onPlay(session: GeckoSession, mediaSession: MediaSession) {
+                sessionCallback?.onMediaStateChanged(
+                    BrowserMediaState.PLAY
+                )
+            }
+
+            override fun onPause(session: GeckoSession, mediaSession: MediaSession) {
+                sessionCallback?.onMediaStateChanged(
+                    BrowserMediaState.PAUSE
+                )
+            }
+
+            override fun onStop(session: GeckoSession, mediaSession: MediaSession) {
+                sessionCallback?.onMediaStateChanged(
+                    BrowserMediaState.STOP
+                )
+            }
+
+            override fun onDeactivated(session: GeckoSession, mediaSession: MediaSession) {
+                sessionCallback?.onMediaDeactivated()
             }
         }
     }

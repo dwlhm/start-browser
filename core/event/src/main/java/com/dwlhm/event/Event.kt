@@ -1,5 +1,9 @@
 package com.dwlhm.event
 
+import com.dwlhm.browser.BrowserMediaMetadata
+import com.dwlhm.browser.BrowserMediaSession
+import com.dwlhm.browser.BrowserMediaState
+
 /**
  * Base interface for all events in the application.
  * Implement this interface to create custom events.
@@ -26,4 +30,25 @@ data class TabInfoChangedEvent(
     val tabId: String,
     val url: String,
     val title: String,
+): Event
+
+data class MediaActivatedEvent(
+    val tabId: String,
+    val mediaSession: BrowserMediaSession,
+): Event
+
+data class MediaMetadataChangedEvent(
+    val tabId: String,
+    val metadataSession: BrowserMediaSession,
+    val mediaMetadata: BrowserMediaMetadata,
+): Event
+
+data class MediaStateChangedEvent(
+    val tabId: String,
+    val mediaSession: BrowserMediaSession,
+    val state: BrowserMediaState,
+): Event
+
+data class MediaDeactivatedEvent(
+    val tabId: String,
 ): Event
