@@ -1,6 +1,10 @@
 package com.dwlhm.browser
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -47,7 +51,7 @@ fun BrowserShell(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
-            .imePadding() // agar tidak tertutupi keyboard
+            .imePadding()
     ) {
         // Browser View
         Box(
@@ -62,46 +66,59 @@ fun BrowserShell(
             )
         }
 
-        // Toolbar
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 4.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Forward button
-            IconButton(
-                onClick = { viewModel.goForward() },
-                enabled = uiState.canGoForward
-            ) {
-                Icon(
-                    imageVector = FeatherIcons.ArrowRight,
-                    contentDescription = "Forward",
-                    tint = if (uiState.canGoForward) Color.Black else Color.Gray
-                )
-            }
-
-            Spacer(modifier = Modifier.width(4.dp))
-
-            // URL input
-            InputUri(
-                value = uiState.inputUrl,
-                modifier = Modifier.weight(1f),
-                onValueChange = viewModel::onUrlChange,
-                onSubmit = viewModel::onUrlSubmit,
+        // Toolbar with animation
+        AnimatedVisibility(
+            visible = uiState.showDynamicToolbar,
+            enter = slideInVertically(
+                initialOffsetY = { it },
+                animationSpec = tween(durationMillis = 200)
+            ),
+            exit = slideOutVertically(
+                targetOffsetY = { it },
+                animationSpec = tween(durationMillis = 200)
             )
-
-            Spacer(modifier = Modifier.width(4.dp))
-
-            // Home button
-            IconButton(
-                onClick = onGoToHome
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.White)
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = FeatherIcons.Square,
-                    contentDescription = "Home",
-                    tint = Color.Black
+                // Forward button
+                IconButton(
+                    onClick = { viewModel.goForward() },
+                    enabled = uiState.canGoForward
+                ) {
+                    Icon(
+                        imageVector = FeatherIcons.ArrowRight,
+                        contentDescription = "Forward",
+                        tint = if (uiState.canGoForward) Color.Black else Color.Gray
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(4.dp))
+
+                // URL input
+                InputUri(
+                    value = uiState.inputUrl,
+                    modifier = Modifier.weight(1f),
+                    onValueChange = viewModel::onUrlChange,
+                    onSubmit = viewModel::onUrlSubmit,
                 )
+
+                Spacer(modifier = Modifier.width(4.dp))
+
+                // Home button
+                IconButton(
+                    onClick = onGoToHome
+                ) {
+                    Icon(
+                        imageVector = FeatherIcons.Square,
+                        contentDescription = "Home",
+                        tint = Color.Black
+                    )
+                }
             }
         }
     }

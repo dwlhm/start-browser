@@ -4,4 +4,5 @@ data class BrowserUiState(
     val inputUrl: String = "",
     val hasSession: Boolean = false,
     val canGoForward: Boolean = false,
+    val showDynamicToolbar: Boolean = true,
 )
