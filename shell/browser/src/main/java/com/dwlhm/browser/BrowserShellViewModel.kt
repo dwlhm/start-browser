@@ -25,13 +25,6 @@ class BrowserShellViewModel(
         super.onCleared()
         _observeJob?.cancel()
     }
-
-    fun loadInitialUrl(initialUrl: String?) {
-        if (initialUrl != null) {
-            browserSession.loadUrl(initialUrl)
-        }
-    }
-
     fun onUrlSubmit(inputUrl: String) {
         browserSession.loadUrl(normalizeUrl(inputUrl))
     }

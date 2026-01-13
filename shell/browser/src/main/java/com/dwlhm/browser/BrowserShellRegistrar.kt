@@ -1,30 +1,32 @@
 package com.dwlhm.browser
 
 import com.dwlhm.navigation.api.RouteRegistrar
+import com.dwlhm.tabmanager.api.TabHandle
 import com.dwlhm.tabmanager.api.TabSessionManager
-import java.net.URLDecoder
+import kotlinx.coroutines.flow.MutableStateFlow
 
 fun registerBrowserShell(
     routeRegistrar: RouteRegistrar,
+    session: MutableStateFlow<TabHandle?>,
     tabSessionManager: TabSessionManager,
 ) {
     routeRegistrar.register(
-        route = "browser?url={url}",
+        route = "browser",
         content = { navController, backStackEntry ->
-            val encodeUrl = backStackEntry.arguments?.getString("url")
-            val initialUrl = encodeUrl?.let {
-                URLDecoder.decode(it, "UTF-8")
-            }
-
             BrowserShellRoute(
-                initialUrl = initialUrl,
                 onNavigateUp = {
+                    // Suspend current tab sebelum navigasi kembali
+                    tabSessionManager.suspendCurrentTab()
                     navController.popBackStack()
                 },
                 onGoToHome = {
+                    // Suspend current tab sebelum navigasi ke home/dashboard
+                    // Jika tab memutar media, akan tetap aktif di background
+                    // Jika tidak, akan sepenuhnya di-suspend
+                    tabSessionManager.suspendCurrentTab()
                     navController.navigate("dashboard-session")
                 },
-                tabSessionManager = tabSessionManager
+                session,
             )
         }
     )

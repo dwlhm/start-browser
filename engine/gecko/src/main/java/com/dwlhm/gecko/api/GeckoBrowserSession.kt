@@ -20,6 +20,15 @@ class GeckoBrowserSession(
     private val _canGoBack = MutableStateFlow(false)
     private val _canGoForward = MutableStateFlow(false)
     
+    /**
+     * Internal tracking untuk status media playback.
+     * Di-update oleh mediaSessionDelegate callbacks.
+     */
+    private var _hasActiveMedia: Boolean = false
+    
+    override val hasActiveMedia: Boolean
+        get() = _hasActiveMedia
+    
     override var sessionCallback: BrowserSessionCallback? = null
     
     override fun setCallback(callback: BrowserSessionCallback) {
@@ -51,6 +60,17 @@ class GeckoBrowserSession(
     override fun detachFromView() {
         session.setActive(true)
         session.setFocused(false)
+    }
+
+    override fun suspendSession(keepActive: Boolean) {
+        // Selalu hilangkan focus saat suspend
+        session.setFocused(false)
+        
+        // Hanya set active false jika tidak perlu tetap aktif (misalnya untuk media)
+        if (!keepActive) {
+            session.setActive(false)
+        }
+        // Jika keepActive = true, session tetap active agar media bisa jalan di background
     }
 
     override fun loadUrl(url: String) {
@@ -145,6 +165,9 @@ class GeckoBrowserSession(
 
         session.mediaSessionDelegate = object : MediaSession.Delegate {
             override fun onActivated(session: GeckoSession, mediaSession: MediaSession) {
+                // Track media state - session ini sekarang punya media aktif
+                _hasActiveMedia = true
+                
                 sessionCallback?.onMediaActivated(
                     GeckoMediaSession(
                         mediaSession
@@ -153,6 +176,9 @@ class GeckoBrowserSession(
             }
 
             override fun onDeactivated(session: GeckoSession, mediaSession: MediaSession) {
+                // Track media state - media sudah tidak aktif
+                _hasActiveMedia = false
+                
                 sessionCallback?.onMediaDeactivated()
             }
 

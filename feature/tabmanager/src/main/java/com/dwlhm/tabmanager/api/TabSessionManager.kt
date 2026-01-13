@@ -4,6 +4,7 @@ import com.dwlhm.browser.BrowserMediaMetadata
 import com.dwlhm.browser.BrowserMediaSession
 import com.dwlhm.browser.BrowserMediaState
 import com.dwlhm.browser.BrowserSessionCallback
+import com.dwlhm.browser.BrowserTab
 import com.dwlhm.event.EventDispatcher
 import com.dwlhm.event.MediaActivatedEvent
 import com.dwlhm.event.MediaDeactivatedEvent
@@ -31,23 +32,29 @@ class TabSessionManager(
     val allTabs = MutableStateFlow<MutableMap<String, TabHandle>>(mutableMapOf())
     val selectedTab = MutableStateFlow<TabHandle?>(null)
     private var lastSelectedTab: TabHandle? = null
+    
+    // Track last known media state untuk sync saat kembali dari notification
+    private var lastKnownMediaState: BrowserMediaState? = null
+    private var lastKnownMediaSession: BrowserMediaSession? = null
 
     init {
         observeSelectedTab()
     }
 
-    fun createTab() {
+    fun createTab(initialUrl: String) {
         val manager = tabRegistry.manager(tabMode)
         val session = manager.newSession()
         val viewHost = manager.provideViewHost()
         val id = UUID.randomUUID().toString()
+
+        session.loadUrl(initialUrl)
 
         val currentTabHandle = TabHandle(id, session, viewHost, tabMode)
 
         eventDispatcher.dispatch(
             TabCreatedEvent(
                 tabId = id,
-                initialUrl = ""
+                initialUrl = initialUrl
             )
         )
 
@@ -59,21 +66,29 @@ class TabSessionManager(
         selectedTab.update { currentTabHandle }
     }
 
-    fun openTab(id: String) {
-        val requestedTab = allTabs.value[id]
+    fun openTab(browserTab: BrowserTab) {
+        val tabId = browserTab.id
+        val requestedTab = allTabs.value[tabId]
 
         if (requestedTab != null) {
+            // Update DefaultTabManager untuk mengganti _currentTab ke session yang benar
+            // Ini penting karena saat GeckoView di-render ulang, viewHost.attach() 
+            // akan memanggil manager.attach() yang menggunakan _currentTab
+            val manager = tabRegistry.manager(requestedTab.mode)
+            manager.acquire(requestedTab.session)
+            
             selectedTab.update { requestedTab }
         } else {
             // Tab not in memory, restore it with the same ID
             val manager = tabRegistry.manager(tabMode)
             val session = manager.newSession()
             val viewHost = manager.provideViewHost()
+            session.loadUrl(browserTab.url)
 
-            val restoredTabHandle = TabHandle(id, session, viewHost, tabMode)
+            val restoredTabHandle = TabHandle(tabId, session, viewHost, tabMode)
 
             allTabs.update { tabs ->
-                tabs[id] = restoredTabHandle
+                tabs[tabId] = restoredTabHandle
                 tabs
             }
 
@@ -100,6 +115,62 @@ class TabSessionManager(
         }
     }
 
+    /**
+     * Menangguhkan tab yang sedang aktif saat user meninggalkan browser view.
+     * 
+     * Perilaku:
+     * - Jika tab sedang memutar media: tetap aktif (keepActive=true) agar media jalan di background
+     * - Jika tab tidak memutar media: sepenuhnya suspended (keepActive=false)
+     * 
+     * Dipanggil saat user navigasi ke dashboard atau screen lain.
+     */
+    fun suspendCurrentTab() {
+        val currentTab = selectedTab.value ?: return
+        
+        // Cek apakah session ini sedang memutar media
+        val isPlayingMedia = currentTab.session.hasActiveMedia
+        
+        // Suspend session dengan keepActive sesuai status media
+        currentTab.session.suspendSession(keepActive = isPlayingMedia)
+    }
+    
+    /**
+     * Sync state media saat kembali ke browser dari notification.
+     * 
+     * Masalah yang diatasi:
+     * - Saat user klik notification dan kembali ke browser, GeckoView tidak 
+     *   mem-fire onPlay/onPause callback karena dari perspektifnya state tidak berubah
+     * - Ini menyebabkan tombol play/pause di notification tidak sinkron dengan
+     *   apa yang ditampilkan di website
+     * 
+     * Solusi:
+     * - Dispatch ulang MediaStateChangedEvent dengan state terakhir yang diketahui
+     * - Ini memaksa notification untuk update sesuai state aktual
+     * 
+     * @param tabId ID tab dari notification intent
+     */
+    fun syncMediaStateFromNotification(tabId: String) {
+        val currentTab = selectedTab.value ?: return
+        
+        // Hanya sync jika ini adalah tab yang sama dengan yang di notification
+        if (currentTab.id != tabId) return
+        
+        // Hanya sync jika ada media aktif
+        if (!currentTab.session.hasActiveMedia) return
+        
+        // Dispatch event dengan last known state untuk sync notification
+        val state = lastKnownMediaState ?: return
+        val mediaSession = lastKnownMediaSession ?: return
+        
+        eventDispatcher.dispatch(
+            MediaStateChangedEvent(
+                tabId = tabId,
+                state = state,
+                mediaSession = mediaSession
+            )
+        )
+    }
+
     private fun observeSelectedTab() {
         selectedTab.onEach { tabHandle ->
 
@@ -109,6 +180,8 @@ class TabSessionManager(
                 lastSelectedTab = null
                 return@onEach
             }
+
+            lastSelectedTab = tabHandle
 
             tabHandle.session.sessionCallback = object : BrowserSessionCallback {
                 private var _mediaSession: BrowserMediaSession? = null
@@ -125,6 +198,9 @@ class TabSessionManager(
 
                 override fun onMediaActivated(mediaSession: BrowserMediaSession) {
                     _mediaSession = mediaSession
+                    // Track untuk sync saat kembali dari notification
+                    lastKnownMediaSession = mediaSession
+                    
                     eventDispatcher.dispatch(
                         MediaActivatedEvent(
                             tabId = tabHandle.id,
@@ -134,6 +210,10 @@ class TabSessionManager(
                 }
 
                 override fun onMediaDeactivated() {
+                    // Clear tracked state
+                    lastKnownMediaState = null
+                    lastKnownMediaSession = null
+                    
                     eventDispatcher.dispatch(
                         MediaDeactivatedEvent(
                             tabId = tabHandle.id,
@@ -142,23 +222,34 @@ class TabSessionManager(
                 }
 
                 override fun onMediaMetadataChanged(mediaMetadata: BrowserMediaMetadata) {
-                    if (_mediaSession == null) return
+                    // Fallback ke lastKnownMediaSession jika _mediaSession null
+                    val session = _mediaSession ?: lastKnownMediaSession
+                    if (session == null) return
+                    
                     eventDispatcher.dispatch(
                         MediaMetadataChangedEvent(
                             tabId = tabHandle.id,
                             mediaMetadata = mediaMetadata,
-                            metadataSession = _mediaSession!!
+                            metadataSession = session
                         )
                     )
                 }
 
                 override fun onMediaStateChanged(state: BrowserMediaState) {
-                    if (_mediaSession == null) return
+                    // Fallback ke lastKnownMediaSession jika _mediaSession null
+                    // Ini terjadi saat callback di-recreate (tab switch/re-select)
+                    // tapi media session masih aktif
+                    val session = _mediaSession ?: lastKnownMediaSession
+                    if (session == null) return
+                    
+                    // Track state untuk sync saat kembali dari notification
+                    lastKnownMediaState = state
+                    
                     eventDispatcher.dispatch(
                         MediaStateChangedEvent(
                             tabId = tabHandle.id,
                             state = state,
-                            mediaSession = _mediaSession!!
+                            mediaSession = session
                         )
                     )
                 }
