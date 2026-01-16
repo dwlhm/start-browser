@@ -51,5 +51,4 @@ dependencies {
     implementation(libs.androidx.room.ktx)
 
     implementation(project(":core:datastore"))
-    implementation(project(":core:domain"))
 }

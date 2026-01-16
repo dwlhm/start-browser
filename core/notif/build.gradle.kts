@@ -1,11 +1,10 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.compose)
 }
 
 android {
-    namespace = "com.dwlhm.media"
+    namespace = "com.dwlhm.notif"
     compileSdk = 36
 
     defaultConfig {
@@ -34,21 +33,11 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:event"))
-    implementation(project(":core:browser"))
-    implementation(project(":core:ui"))
-    implementation(project(":core:data"))
-    implementation(project(":core:media"))
-
-    implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.compose.runtime)
-    implementation(libs.androidx.compose.ui)
-    implementation(libs.androidx.compose.foundation)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
-    
-    // MediaSession support untuk MediaNotificationBuilder
-    implementation(libs.androidx.media)
+    testImplementation(libs.junit4)
+    androidTestImplementation(libs.androidx.test.ext.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
 }

@@ -3,11 +3,17 @@ package com.dwlhm.startbrowser.services
 import android.app.Service
 import android.content.Intent
 import android.os.IBinder
-import com.dwlhm.browser.BrowserMediaSession
+import android.util.Log
 import com.dwlhm.browser.BrowserMediaState
-import com.dwlhm.startbrowser.services.media.MediaNotificationBuilder
-import com.dwlhm.startbrowser.services.media.MediaPlaybackState
-import com.dwlhm.startbrowser.services.media.MediaSessionController
+import com.dwlhm.browser.MediaSessionController
+import com.dwlhm.browser.MediaSessionControllerImpl
+import com.dwlhm.media.MediaIntent
+import com.dwlhm.media.api.MediaNotificationBuilder
+import com.dwlhm.media.api.MediaPlaybackServiceBridge
+import com.dwlhm.media.api.MediaPlaybackState
+import com.dwlhm.startbrowser.MainActivity
+import com.dwlhm.startbrowser.R
+import com.dwlhm.startbrowser.store.MediaStores
 
 /**
  * Foreground service untuk background media playback.
@@ -18,7 +24,7 @@ import com.dwlhm.startbrowser.services.media.MediaSessionController
  * - State dikelola via MediaPlaybackState (immutable)
  * - Notification dibangun oleh MediaNotificationBuilder
  * - MediaSession dikelola oleh MediaSessionController
- * 
+ *
  * Flow:
  * 1. Service menerima state dari MediaPlaybackManager via Intent
  * 2. State disimpan di currentState (single source of truth di service)
@@ -27,27 +33,22 @@ import com.dwlhm.startbrowser.services.media.MediaSessionController
  */
 class MediaPlaybackService : Service() {
     
-    // === State ===
     private var currentState: MediaPlaybackState? = null
     
-    // === Components ===
     private lateinit var notificationBuilder: MediaNotificationBuilder
     private lateinit var sessionController: MediaSessionController
-    
-    // === Lifecycle ===
-    
+
     override fun onCreate() {
         super.onCreate()
         
-        // Initialize components
-        notificationBuilder = MediaNotificationBuilder(this)
-        sessionController = MediaSessionController(this)
+        notificationBuilder = MediaNotificationBuilder(this, MainActivity::class.java, R.drawable.ic_launcher_foreground)
+        sessionController = MediaSessionControllerImpl(this)
         
-        // Setup notification channel
         notificationBuilder.createNotificationChannel()
         
-        // Initialize media session dengan callback
         sessionController.initialize(createMediaSessionCallback())
+
+        startForegroundWithNotification()
     }
     
     override fun onDestroy() {
@@ -62,28 +63,26 @@ class MediaPlaybackService : Service() {
     
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         intent?.let { handleIntent(it) }
-        return START_NOT_STICKY
+        // START_STICKY: Service akan di-restart oleh sistem jika di-kill
+        // Ini memastikan media tetap berjalan meski sistem menghentikan service
+        return START_STICKY
     }
-    
-    // === Intent Handling ===
-    
+
     /**
      * Handle semua intent yang masuk.
      * Setiap intent membawa informasi untuk update state atau trigger action.
      */
     private fun handleIntent(intent: Intent) {
         when (intent.action) {
-            // User actions dari notification
             ACTION_PLAY -> handlePlayAction()
             ACTION_PAUSE -> handlePauseAction()
             ACTION_STOP -> handleStopAction()
             ACTION_PREVIOUS -> handlePreviousAction()
             ACTION_NEXT -> handleNextAction()
             
-            // State updates dari Manager
-            ACTION_INITIALIZE -> handleInitialize(intent)
-            ACTION_UPDATE_STATE -> handleUpdateState(intent)
-            ACTION_UPDATE_METADATA -> handleUpdateMetadata(intent)
+            MediaIntent.Action.INITIALIZE -> handleInitialize(intent)
+            MediaIntent.Action.UPDATE_STATE -> handleUpdateState(intent)
+            MediaIntent.Action.UPDATE_METADATA -> handleUpdateMetadata(intent)
         }
     }
     
@@ -95,11 +94,14 @@ class MediaPlaybackService : Service() {
      * race condition. Ini memastikan notification langsung menampilkan state yang benar.
      */
     private fun handleInitialize(intent: Intent) {
-        val tabId = intent.getStringExtra(EXTRA_TAB_ID) ?: return
-        val mediaSession = MediaPlaybackServiceBridge.getMediaSession() ?: return
+        Log.d("[Media:Service] --init", "initializing...")
+        val tabId = intent.getStringExtra(MediaIntent.Extra.TAB_ID) ?: return
+        Log.d("[Media:Service] --init", "tabId: $tabId")
+        val mediaSession = MediaStores.sessionStore.get(MediaIntent.Extra.SESSION) ?: return
+        Log.d("[Media:Service] --init", "mediaSession: $mediaSession")
         
         // Ambil initial state dari intent, default ke PAUSE jika tidak ada
-        val initialStateName = intent.getStringExtra(EXTRA_STATE)
+        val initialStateName = intent.getStringExtra(MediaIntent.Extra.STATE)
         val initialState = if (initialStateName != null) {
             try {
                 BrowserMediaState.valueOf(initialStateName)
@@ -109,19 +111,14 @@ class MediaPlaybackService : Service() {
         } else {
             BrowserMediaState.PAUSE
         }
-        
-        // Buat initial state dengan playback state yang benar
+
         currentState = MediaPlaybackState(
             tabId = tabId,
             mediaSession = mediaSession,
             playbackState = initialState
         )
         
-        // Update media session dengan state awal
         sessionController.updatePlaybackState(initialState)
-        
-        // Start foreground dengan notification awal
-        startForegroundWithNotification()
     }
     
     /**
@@ -129,13 +126,11 @@ class MediaPlaybackService : Service() {
      */
     private fun handleUpdateState(intent: Intent) {
         val state = currentState ?: return
-        val stateName = intent.getStringExtra(EXTRA_STATE) ?: return
+        val stateName = intent.getStringExtra(MediaIntent.Extra.STATE) ?: return
         val newPlaybackState = BrowserMediaState.valueOf(stateName)
         
-        // Update state
         currentState = state.withPlaybackState(newPlaybackState)
         
-        // Update komponen
         sessionController.updatePlaybackState(newPlaybackState)
         updateNotification()
     }
@@ -146,17 +141,20 @@ class MediaPlaybackService : Service() {
     private fun handleUpdateMetadata(intent: Intent) {
         val state = currentState ?: return
         
-        val title = intent.getStringExtra(EXTRA_TITLE)
-        val artist = intent.getStringExtra(EXTRA_ARTIST)
-        val album = intent.getStringExtra(EXTRA_ALBUM)
-        val artwork = MediaPlaybackServiceBridge.consumeArtwork()
+        val title = intent.getStringExtra(MediaIntent.Extra.TITLE)
+        val artist = intent.getStringExtra(MediaIntent.Extra.ARTIST)
+        val album = intent.getStringExtra(MediaIntent.Extra.ALBUM)
+        val artwork = MediaStores.artworkStore.get(MediaIntent.Extra.ARTWORK)
         
-        // Update state
         currentState = state.withMetadata(title, artist, album, artwork)
         
-        // Update komponen
         currentState?.let { newState ->
-            sessionController.updateMetadata(newState)
+            sessionController.updateMetadata(
+                title = newState.title,
+                artist = newState.artist,
+                album = newState.album,
+                artwork = newState.artwork
+            )
             updateNotification()
         }
     }
@@ -243,81 +241,11 @@ class MediaPlaybackService : Service() {
     
     companion object {
         // Actions dari notification buttons
-        const val ACTION_PLAY = "com.dwlhm.startbrowser.ACTION_PLAY"
-        const val ACTION_PAUSE = "com.dwlhm.startbrowser.ACTION_PAUSE"
-        const val ACTION_STOP = "com.dwlhm.startbrowser.ACTION_STOP"
-        const val ACTION_PREVIOUS = "com.dwlhm.startbrowser.ACTION_PREVIOUS"
-        const val ACTION_NEXT = "com.dwlhm.startbrowser.ACTION_NEXT"
-        
-        // Actions dari Manager
-        const val ACTION_INITIALIZE = "com.dwlhm.startbrowser.ACTION_INITIALIZE"
-        const val ACTION_UPDATE_STATE = "com.dwlhm.startbrowser.ACTION_UPDATE_STATE"
-        const val ACTION_UPDATE_METADATA = "com.dwlhm.startbrowser.ACTION_UPDATE_METADATA"
-        
-        // Extras
-        const val EXTRA_TAB_ID = "extra_tab_id"
-        const val EXTRA_STATE = "extra_state"
-        const val EXTRA_TITLE = "extra_title"
-        const val EXTRA_ARTIST = "extra_artist"
-        const val EXTRA_ALBUM = "extra_album"
+        const val ACTION_PLAY = MediaNotificationBuilder.ACTION_PLAY
+        const val ACTION_PAUSE = MediaNotificationBuilder.ACTION_PAUSE
+        const val ACTION_STOP = MediaNotificationBuilder.ACTION_STOP
+        const val ACTION_PREVIOUS = MediaNotificationBuilder.ACTION_PREVIOUS
+        const val ACTION_NEXT = MediaNotificationBuilder.ACTION_NEXT
     }
 }
 
-/**
- * Bridge untuk passing non-serializable data ke service.
- * 
- * Catatan: Ini masih menggunakan static reference, tapi:
- * - Data langsung di-consume setelah diakses
- * - Hanya digunakan saat initialize dan update metadata
- * - Alternative: Binder-based communication (lebih kompleks)
- * 
- * TODO: Pertimbangkan migrasi ke Binder jika diperlukan.
- */
-object MediaPlaybackServiceBridge {
-    private var pendingMediaSession: BrowserMediaSession? = null
-    private var pendingArtwork: android.graphics.Bitmap? = null
-    
-    /**
-     * Set MediaSession untuk diambil oleh service.
-     * Dipanggil oleh Manager sebelum start service.
-     */
-    fun setMediaSession(session: BrowserMediaSession?) {
-        pendingMediaSession = session
-    }
-    
-    /**
-     * Get dan consume MediaSession.
-     * Session di-null-kan setelah diambil.
-     */
-    fun getMediaSession(): BrowserMediaSession? {
-        val session = pendingMediaSession
-        pendingMediaSession = null
-        return session
-    }
-    
-    /**
-     * Set artwork untuk diambil oleh service.
-     * Bitmap tidak bisa dikirim via Intent karena size limit.
-     */
-    fun setArtwork(artwork: android.graphics.Bitmap?) {
-        pendingArtwork = artwork
-    }
-    
-    /**
-     * Get dan consume artwork.
-     * Artwork di-null-kan setelah diambil.
-     */
-    fun consumeArtwork(): android.graphics.Bitmap? {
-        val artwork = pendingArtwork
-        pendingArtwork = null
-        return artwork
-    }
-    
-    /**
-     * Clear semua pending data.
-     */
-    fun clear() {
-        pendingMediaSession = null
-        pendingArtwork = null
-    }
-}

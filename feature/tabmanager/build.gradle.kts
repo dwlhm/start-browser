@@ -53,4 +53,5 @@ dependencies {
     implementation(project(":core:datastore"))
     implementation(project(":core:browser"))
     implementation(project(":core:event"))
+    implementation(project(":core:media"))
 }

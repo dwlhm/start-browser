@@ -34,4 +34,6 @@ android {
 
 dependencies {
     implementation(libs.androidx.core.ktx)
+    // MediaSessionCompat.Token untuk interface - perlu api() karena interface expose type ini
+    api(libs.androidx.media)
 }

@@ -15,14 +15,10 @@ fun registerBrowserShell(
         content = { navController, backStackEntry ->
             BrowserShellRoute(
                 onNavigateUp = {
-                    // Suspend current tab sebelum navigasi kembali
                     tabSessionManager.suspendCurrentTab()
                     navController.popBackStack()
                 },
                 onGoToHome = {
-                    // Suspend current tab sebelum navigasi ke home/dashboard
-                    // Jika tab memutar media, akan tetap aktif di background
-                    // Jika tidak, akan sepenuhnya di-suspend
                     tabSessionManager.suspendCurrentTab()
                     navController.navigate("dashboard-session")
                 },

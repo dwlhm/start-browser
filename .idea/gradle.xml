@@ -15,9 +15,10 @@
             <option value="$PROJECT_DIR$/core/browser" />
             <option value="$PROJECT_DIR$/core/data" />
             <option value="$PROJECT_DIR$/core/datastore" />
-            <option value="$PROJECT_DIR$/core/domain" />
             <option value="$PROJECT_DIR$/core/event" />
+            <option value="$PROJECT_DIR$/core/media" />
             <option value="$PROJECT_DIR$/core/navigation" />
+            <option value="$PROJECT_DIR$/core/notif" />
             <option value="$PROJECT_DIR$/core/ui" />
             <option value="$PROJECT_DIR$/core/utils" />
             <option value="$PROJECT_DIR$/core/webview" />

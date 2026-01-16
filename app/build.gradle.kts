@@ -70,9 +70,9 @@ dependencies {
     implementation(project(":feature:browser"))
     implementation(project(":core:datastore"))
     implementation(project(":core:data"))
-    implementation(project(":core:domain"))
     implementation(project(":core:ui"))
     implementation(project(":core:event"))
+    implementation(project(":core:media"))
 
     implementation(project(":core:webview"))
     implementation(project(":engine:gecko"))

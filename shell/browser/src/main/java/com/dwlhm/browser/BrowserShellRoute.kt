@@ -19,20 +19,7 @@ fun BrowserShellRoute(
 ) {
     val currentHandle by sessionFlow.collectAsState(initial = null)
 
-    LaunchedEffect(currentHandle?.id) {
-        Log.d("ACTIVE BROWSER", "session id: ${currentHandle?.id}")
-    }
-
-    DisposableEffect(Unit) {
-        Log.d("BROWSER_ROUTE", "ENTER composition, session id: ${currentHandle?.id}")
-        onDispose {
-            Log.d("BROWSER_ROUTE", "EXIT composition, session id: ${currentHandle?.id}")
-        }
-    }
-
     if (currentHandle == null) {
-        // Opsional: Tampilkan Loading atau Empty State
-        Log.d("BROWSER_ROUTE", "No active tab selected")
         return
     }
 

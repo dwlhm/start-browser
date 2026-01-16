@@ -25,16 +25,5 @@ interface BrowserSession {
     fun goBack(): Boolean
     fun goForward(): Boolean
     fun destroy()
-
-    /**
-     * Menangguhkan session saat user meninggalkan browser view.
-     *
-     * @param keepActive Jika true, session tetap aktif (untuk background media playback).
-     *                   Jika false, session sepenuhnya ditangguhkan.
-     *
-     * Perilaku:
-     * - keepActive = true  -> setFocused(false), setActive(true)  -> media bisa jalan di background
-     * - keepActive = false -> setFocused(false), setActive(false) -> session sepenuhnya suspended
-     */
     fun suspendSession(keepActive: Boolean = false)
 }
