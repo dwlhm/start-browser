@@ -46,9 +46,9 @@ dependencies {
     implementation(project(":core:ui"))
     implementation(project(":core:browser"))
     implementation(project(":core:utils"))
+    implementation(project(":core:event"))
 
     implementation(project(":feature:browser"))
-    implementation(project(":feature:tabmanager"))
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.compose.runtime)

@@ -73,6 +73,14 @@ class GeckoBrowserSession(
         // Jika keepActive = true, session tetap active agar media bisa jalan di background
     }
 
+    override fun setActive(state: Boolean) {
+        session.setActive(state)
+    }
+
+    override fun setFocused(state: Boolean) {
+        session.setFocused(state)
+    }
+
     override fun loadUrl(url: String) {
         session.loadUri(url)
     }

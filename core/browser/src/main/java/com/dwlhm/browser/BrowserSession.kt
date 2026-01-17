@@ -26,4 +26,6 @@ interface BrowserSession {
     fun goForward(): Boolean
     fun destroy()
     fun suspendSession(keepActive: Boolean = false)
+    fun setActive(state: Boolean)
+    fun setFocused(state: Boolean)
 }

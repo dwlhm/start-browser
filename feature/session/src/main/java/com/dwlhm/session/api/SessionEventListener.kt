@@ -1,4 +1,4 @@
-package com.dwlhm.sessions.api
+package com.dwlhm.session.api
 
 import com.dwlhm.data.room.sessions.SessionDao
 import com.dwlhm.data.room.sessions.SessionEntity
@@ -8,7 +8,7 @@ import com.dwlhm.event.TabInfoChangedEvent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
-class SessionListener(
+class SessionEventListener(
     private val sessionDao: SessionDao,
     private val scope: CoroutineScope,
 ) {
@@ -38,7 +38,9 @@ class SessionListener(
                 title = "",
                 favicon = null,
                 createdAt = now,
-                updatedAt = now
+                updatedAt = now,
+                isIncognito = false,
+                isMediaSession = false,
             )
         )
     }

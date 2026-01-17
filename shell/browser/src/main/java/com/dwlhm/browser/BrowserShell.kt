@@ -36,7 +36,7 @@ fun BrowserShell(
     onNavigateUp: () -> Unit,
     onGoToHome: () -> Unit,
     viewModel: BrowserShellViewModel,
-    viewHost: BrowserViewHost,
+    browserMountController: BrowserMountController,
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
@@ -60,7 +60,7 @@ fun BrowserShell(
                 .fillMaxWidth()
         ) {
             BrowserView(
-                browserViewHost = viewHost,
+                browserMountController = browserMountController,
                 modifier = Modifier.fillMaxSize(),
                 context = context
             )

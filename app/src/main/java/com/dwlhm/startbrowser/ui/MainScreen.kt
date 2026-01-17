@@ -2,7 +2,6 @@ package com.dwlhm.startbrowser.ui
 
 import android.content.Context
 import android.content.Intent
-import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -10,7 +9,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.navigation.compose.rememberNavController
-import com.dwlhm.browser.BrowserTab
 import com.dwlhm.browser.registerBrowserShell
 import com.dwlhm.dashboardsession.registerDashboardSessionShell
 import com.dwlhm.data.datastore.onboarding.OnboardingDatastore
@@ -49,8 +47,7 @@ fun MainScreen(
 
     val didRegister = remember { mutableStateOf(false) }
 
-    val tabSessionManager = app.tabSessionManager
-    val sessions = app.database.sessionDao()
+    val sessionManager = app.sessionManager
 
     LaunchedEffect(hasOnboarded) {
         if (hasOnboarded == null) return@LaunchedEffect
@@ -60,28 +57,14 @@ fun MainScreen(
             val sessionId = intent.getStringExtra("tab_id")
 
             if (destination == "browser") {
-                Log.d("BROWSER", "session id: $sessionId, active session id: ${tabSessionManager.selectedTab.value?.id}")
-                
-                val isFromNotification = sessionId != null
-                val isSameTab = tabSessionManager.selectedTab.value?.id == sessionId
+                val isSameTab = app.sessionRegistry.foregroundSessionId.value == sessionId
                 
                 if (!isSameTab && sessionId != null) {
-                    tabSessionManager.openTab(
-                        BrowserTab(
-                            id = sessionId,
-                            url = intent.dataString ?: ""
-                        )
-                    )
+                    sessionManager.openSession(sessionId)
                 }
 
                 navController.navigate("browser") {
                     launchSingleTop = true
-                }
-                
-                // Sync media state jika kembali dari notification dengan tab yang sama
-                // Ini diperlukan karena GeckoView tidak fire callback jika state tidak berubah
-                if (isFromNotification && isSameTab) {
-                    tabSessionManager.syncMediaStateFromNotification(sessionId)
                 }
             }
         }
@@ -90,15 +73,14 @@ fun MainScreen(
     if (!didRegister.value) {
         registerDashboardSessionShell(
             routeRegistrar = routeRegistrar,
-            tabSessionManager = tabSessionManager,
-            sessions = sessions.getAll(),
-            removeSession = sessions::delete,
+            sessionManager = sessionManager,
+            sessionRegistry = app.sessionRegistry
         )
         registerOnboardingScreen(routeRegistrar)
         registerBrowserShell(
             routeRegistrar = routeRegistrar,
-            session = tabSessionManager.selectedTab,
-            tabSessionManager = tabSessionManager
+            sessionManager = sessionManager,
+            sessionRegistry = app.sessionRegistry
         )
         didRegister.value = true
     }

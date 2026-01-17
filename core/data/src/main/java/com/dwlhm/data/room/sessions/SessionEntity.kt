@@ -16,6 +16,8 @@ data class SessionEntity(
     val url: String,
     val title: String?,
     val favicon: String?,
+    val isIncognito: Boolean,
+    val isMediaSession: Boolean,
 
     val createdAt: Long,
     val updatedAt: Long,

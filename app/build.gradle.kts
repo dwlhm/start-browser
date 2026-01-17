@@ -77,9 +77,8 @@ dependencies {
     implementation(project(":core:webview"))
     implementation(project(":engine:gecko"))
 
-    implementation(project(":feature:tabmanager"))
-    implementation(project(":feature:sessions"))
     implementation(project(":feature:media"))
+    implementation(project(":feature:session"))
 
     implementation(project(":shell:browser"))
     implementation(project(":shell:dashboardsession"))

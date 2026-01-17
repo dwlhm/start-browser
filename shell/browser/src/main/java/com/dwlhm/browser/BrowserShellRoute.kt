@@ -1,40 +1,39 @@
 package com.dwlhm.browser
 
-import android.util.Log
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
-import com.dwlhm.tabmanager.api.TabHandle
-import kotlinx.coroutines.flow.Flow
+import com.dwlhm.browser.api.DefaultBrowserMountController
+import com.dwlhm.browser.session.SessionManager
+import com.dwlhm.browser.session.SessionRegistry
 
 @Composable
 fun BrowserShellRoute(
     onNavigateUp: () -> Unit,
     onGoToHome: () -> Unit,
-    sessionFlow: Flow<TabHandle?>,
+    sessionManager: SessionManager,
+    sessionRegistry: SessionRegistry,
 ) {
-    val currentHandle by sessionFlow.collectAsState(initial = null)
+    val currentSession by sessionManager.currentSession.collectAsState()
+    val foregroundSessionId by sessionRegistry.foregroundSessionId.collectAsState()
 
-    if (currentHandle == null) {
-        return
+    val activeSession = currentSession ?: return
+
+    val viewModel = remember(activeSession, foregroundSessionId) {
+        BrowserShellViewModel(
+            browserSession = activeSession,
+            sessionId = foregroundSessionId ?: ""
+        )
     }
 
-    val activeHandle = currentHandle!!
-
-    val viewModel = remember(activeHandle.id) {
-        BrowserShellViewModel(browserSession = activeHandle.session)
-    }
-
-    key(activeHandle) {
+    key(activeSession) {
         BrowserShell(
             onNavigateUp = onNavigateUp,
             onGoToHome = onGoToHome,
             viewModel = viewModel,
-            viewHost = activeHandle.viewHost
+            browserMountController = DefaultBrowserMountController(activeSession),
         )
     }
 }

@@ -50,5 +50,6 @@ dependencies {
     ksp(libs.room.compiler)
     implementation(libs.androidx.room.ktx)
 
+    implementation(project(":core:browser"))
     implementation(project(":core:datastore"))
 }

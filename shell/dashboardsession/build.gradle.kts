@@ -43,8 +43,7 @@ dependencies {
     implementation(project(":core:utils"))
     implementation(project(":core:data"))
 
-    implementation(project(":feature:tabmanager"))
-    implementation(project(":feature:sessions"))
+    implementation(project(":feature:session"))
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.compose.runtime)

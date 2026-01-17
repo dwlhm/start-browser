@@ -62,6 +62,4 @@ dependencies {
     implementation(project(":core:data"))
     implementation(project(":core:datastore"))
     implementation(project(":core:webview"))
-
-    implementation(project(":feature:tabmanager"))
 }

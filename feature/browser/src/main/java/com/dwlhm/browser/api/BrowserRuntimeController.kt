@@ -8,13 +8,11 @@ import com.dwlhm.gecko.api.GeckoBrowserRuntime
 class BrowserRuntimeController(
     context: Context
 ): BrowserRuntime {
-    private val geckoRuntime = GeckoBrowserRuntime.getInstance(context)
+    private val geckoRuntime by lazy { GeckoBrowserRuntime.getInstance(context.applicationContext) }
 
-    override fun createSession(): BrowserSession {
-        return geckoRuntime.createSession()
-    }
+    override fun createSession(): BrowserSession = geckoRuntime.createSession()
 
     override fun shutdown() {
-       geckoRuntime.shutdown()
+        geckoRuntime.shutdown()
     }
 }

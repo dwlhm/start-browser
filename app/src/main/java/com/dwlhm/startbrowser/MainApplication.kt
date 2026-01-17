@@ -2,25 +2,24 @@ package com.dwlhm.startbrowser
 
 import android.app.ActivityManager
 import android.app.Application
-import android.graphics.Bitmap
 import android.os.Process
 import androidx.room.Room
 import com.dwlhm.browser.BrowserRuntime
 import com.dwlhm.browser.api.BrowserRuntimeController
+import com.dwlhm.browser.api.DefaultBrowserSessionFactory
+import com.dwlhm.browser.session.SessionFocusController
+import com.dwlhm.browser.session.SessionManager
+import com.dwlhm.browser.session.SessionRegistry
 import com.dwlhm.data.api.AppDatabase
-import com.dwlhm.data.store.media.MediaAssetStore
+import com.dwlhm.data.store.session.SessionRuntimeStore
 import com.dwlhm.event.EventCollector
-import com.dwlhm.event.EventDispatcher
 import com.dwlhm.media.MediaStateRegistry
 import com.dwlhm.media.MediaStateRegistryListener
-import com.dwlhm.media.api.InMemoryMediaArtworkStore
 import com.dwlhm.media.api.MediaPlaybackCoordinator
-import com.dwlhm.sessions.api.SessionListener
-import com.dwlhm.tabmanager.api.BackgroundTabManager
-import com.dwlhm.tabmanager.api.DefaultTabManager
-import com.dwlhm.tabmanager.api.TabManagerRegistry
-import com.dwlhm.tabmanager.api.TabMode
-import com.dwlhm.tabmanager.api.TabSessionManager
+import com.dwlhm.session.api.DefaultSessionFocusController
+import com.dwlhm.session.api.DefaultSessionManager
+import com.dwlhm.session.api.DefaultSessionRegistry
+import com.dwlhm.session.api.SessionEventListener
 import com.dwlhm.startbrowser.services.MediaPlaybackService
 import com.dwlhm.startbrowser.store.MediaStores
 import dagger.hilt.android.HiltAndroidApp
@@ -44,22 +43,20 @@ class MainApplication: Application() {
     }
 
     val browserRuntime: BrowserRuntime by lazy { BrowserRuntimeController(this) }
-    val tabSessionManager: TabSessionManager by lazy {
-        val defaultTabManager = DefaultTabManager(browserRuntime)
-        val backgroundTabManager = BackgroundTabManager()
+    val sessionRegistry: SessionRegistry by lazy { DefaultSessionRegistry(database.sessionDao(), applicationScope) }
+    val sessionFocusController: SessionFocusController by lazy { DefaultSessionFocusController() }
+    val sessionRuntimeStore: SessionRuntimeStore by lazy { SessionRuntimeStore() }
+    val sessionManager: SessionManager by lazy { DefaultSessionManager(
+        sessionRegistry,
+        DefaultBrowserSessionFactory(browserRuntime),
+        sessionRuntimeStore,
+        sessionFocusController
+    ) }
+    private val sessionEventListener: SessionEventListener by lazy { SessionEventListener(
+        database.sessionDao(),
+        applicationScope,
+    ) }
 
-        val tabRegistry = TabManagerRegistry(
-            managers = mapOf(
-                TabMode.DEFAULT to defaultTabManager,
-                TabMode.BACKGROUND to backgroundTabManager,
-            )
-        )
-
-        TabSessionManager(tabRegistry, TabMode.DEFAULT, eventDispatcher, mediaStateRegistry)
-    }
-    val eventDispatcher: EventDispatcher by lazy { EventDispatcher }
-
-    private var sessionListener: SessionListener? = null
     private var mediaPlaybackCoordinator: MediaPlaybackCoordinator? = null
     val mediaStateRegistry: MediaStateRegistry by lazy { MediaStateRegistry() }
     private var mediaStateRegistryListener: MediaStateRegistryListener? = null
@@ -68,9 +65,7 @@ class MainApplication: Application() {
         super.onCreate()
 
         if (isMainProcess()) {
-            sessionListener = SessionListener(database.sessionDao(), applicationScope).apply {
-                observeEvent()
-            }
+            sessionEventListener.observeEvent()
 
             mediaPlaybackCoordinator = MediaPlaybackCoordinator(
                 context = applicationContext,
@@ -80,8 +75,7 @@ class MainApplication: Application() {
             )
 
             mediaPlaybackCoordinator?.listenToMediaEvent(EventCollector(applicationScope))
-            
-            // Initialize MediaStateRegistryListener untuk track media state per tab
+
             mediaStateRegistryListener = MediaStateRegistryListener(mediaStateRegistry, applicationScope).apply {
                 observeEvents()
             }
@@ -92,6 +86,9 @@ class MainApplication: Application() {
         super.onTerminate()
 
         mediaPlaybackCoordinator?.destroy()
+
+        sessionRuntimeStore.clear()
+
         applicationScope.cancel()
     }
 

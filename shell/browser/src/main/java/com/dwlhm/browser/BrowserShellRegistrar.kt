@@ -1,28 +1,28 @@
 package com.dwlhm.browser
 
+import com.dwlhm.browser.session.SessionManager
+import com.dwlhm.browser.session.SessionRegistry
 import com.dwlhm.navigation.api.RouteRegistrar
-import com.dwlhm.tabmanager.api.TabHandle
-import com.dwlhm.tabmanager.api.TabSessionManager
-import kotlinx.coroutines.flow.MutableStateFlow
 
 fun registerBrowserShell(
     routeRegistrar: RouteRegistrar,
-    session: MutableStateFlow<TabHandle?>,
-    tabSessionManager: TabSessionManager,
+    sessionManager: SessionManager,
+    sessionRegistry: SessionRegistry,
 ) {
     routeRegistrar.register(
         route = "browser",
         content = { navController, backStackEntry ->
             BrowserShellRoute(
                 onNavigateUp = {
-                    tabSessionManager.suspendCurrentTab()
+                    sessionManager.minimizeSession()
                     navController.popBackStack()
                 },
                 onGoToHome = {
-                    tabSessionManager.suspendCurrentTab()
+                    sessionManager.minimizeSession()
                     navController.navigate("dashboard-session")
                 },
-                session,
+                sessionManager = sessionManager,
+                sessionRegistry = sessionRegistry,
             )
         }
     )

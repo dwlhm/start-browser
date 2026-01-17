@@ -70,8 +70,7 @@ dependencies {
     implementation(project(":core:ui"))
     implementation(project(":core:data"))
     implementation(project(":core:datastore"))
-    implementation(project(":feature:tabmanager"))
-    
+
     // MediaSession support untuk MediaSessionControllerImpl
     implementation(libs.androidx.media)
 }

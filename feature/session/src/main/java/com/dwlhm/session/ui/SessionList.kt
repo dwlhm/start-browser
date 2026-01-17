@@ -1,4 +1,4 @@
-package com.dwlhm.sessions.ui
+package com.dwlhm.session.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -27,15 +27,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.dwlhm.data.room.sessions.SessionEntity
+import com.dwlhm.browser.session.SessionDescriptor
 import kotlinx.coroutines.flow.Flow
 
 @Composable
 fun SessionList(
-    sessions: Flow<List<SessionEntity>>,
+    sessions: Flow<List<SessionDescriptor>>,
     modifier: Modifier = Modifier,
-    onSessionClick: (SessionEntity) -> Unit = {},
-    onSessionClose: (SessionEntity) -> Unit = {},
+    onSessionClick: (SessionDescriptor) -> Unit = {},
+    onSessionClose: (SessionDescriptor) -> Unit = {},
 ) {
     val sessionList by sessions.collectAsState(initial = emptyList())
 
@@ -59,7 +59,7 @@ fun SessionList(
 
 @Composable
 private fun SessionItem(
-    session: SessionEntity,
+    session: SessionDescriptor,
     onClick: () -> Unit,
     onClose: () -> Unit,
     modifier: Modifier = Modifier,
@@ -82,8 +82,8 @@ private fun SessionItem(
             contentAlignment = Alignment.Center
         ) {
             BasicText(
-                text = session.title?.firstOrNull()?.uppercase() 
-                    ?: session.url.firstOrNull()?.uppercase() 
+                text = session.title.firstOrNull()?.uppercase()
+                    ?: session.url.firstOrNull()?.uppercase()
                     ?: "?",
                 style = TextStyle(
                     fontSize = 16.sp,
@@ -99,7 +99,7 @@ private fun SessionItem(
             modifier = Modifier.weight(1f)
         ) {
             BasicText(
-                text = session.title?.ifBlank { "Untitled" } ?: "Untitled",
+                text = session.title,
                 style = TextStyle(
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Medium,

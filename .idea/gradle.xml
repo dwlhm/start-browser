@@ -29,8 +29,7 @@
             <option value="$PROJECT_DIR$/feature/home" />
             <option value="$PROJECT_DIR$/feature/media" />
             <option value="$PROJECT_DIR$/feature/onboarding" />
-            <option value="$PROJECT_DIR$/feature/sessions" />
-            <option value="$PROJECT_DIR$/feature/tabmanager" />
+            <option value="$PROJECT_DIR$/feature/session" />
             <option value="$PROJECT_DIR$/shell" />
             <option value="$PROJECT_DIR$/shell/browser" />
             <option value="$PROJECT_DIR$/shell/dashboardsession" />
