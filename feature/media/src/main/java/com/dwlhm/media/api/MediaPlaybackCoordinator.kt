@@ -40,7 +40,7 @@ class MediaPlaybackCoordinator(
     fun listenToMediaEvent(eventCollector: EventCollector) {
         eventCollector.on<MediaActivatedEvent> { event ->
             deactivationJob?.cancel(CancellationException("new media activated"))
-
+            Log.d("[Media:Sync]", "--i mediaplaybackCoordinator")
             if (activeMediaTabId !== null && activeMediaTabId != event.tabId) {
                 stopMediaService()
             }
@@ -66,6 +66,7 @@ class MediaPlaybackCoordinator(
         }
 
         eventCollector.on<MediaMetadataChangedEvent> { event ->
+            Log.d("[Media:Sync]", "metadata changed: ${event.mediaMetadata}")
             updateMetadataMediaService(event.mediaMetadata)
         }
 

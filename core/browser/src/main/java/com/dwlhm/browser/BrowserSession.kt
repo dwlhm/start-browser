@@ -3,19 +3,13 @@ package com.dwlhm.browser
 import kotlinx.coroutines.flow.StateFlow
 
 interface BrowserSession {
+    val activeSessionId: String
     val activeUrl: StateFlow<String?>
     val activeTitle: StateFlow<String?>
     val canGoBack: StateFlow<Boolean>
     val canGoForward: StateFlow<Boolean>
 
-    /**
-     * Apakah session ini sedang memutar media (audio/video).
-     * Digunakan untuk menentukan apakah session harus tetap aktif saat di background.
-     */
     val hasActiveMedia: Boolean
-
-    var sessionCallback: BrowserSessionCallback?
-    fun setCallback(callback: BrowserSessionCallback)
 
     fun attachToView(view: Any)
     fun detachFromView()

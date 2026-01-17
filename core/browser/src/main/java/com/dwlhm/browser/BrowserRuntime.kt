@@ -1,8 +1,9 @@
 package com.dwlhm.browser
 
-import android.content.Context
-
 interface BrowserRuntime {
-    fun createSession(): BrowserSession
+    fun createSession(
+        sessionId: String,
+        isIncognito: Boolean
+    ): BrowserSession
     fun shutdown()
 }

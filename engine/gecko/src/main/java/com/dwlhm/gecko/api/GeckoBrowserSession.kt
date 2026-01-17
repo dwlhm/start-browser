@@ -3,7 +3,12 @@ package com.dwlhm.gecko.api
 import com.dwlhm.browser.BrowserMediaMetadata
 import com.dwlhm.browser.BrowserMediaState
 import com.dwlhm.browser.BrowserSession
-import com.dwlhm.browser.BrowserSessionCallback
+import com.dwlhm.event.EventDispatcher
+import com.dwlhm.event.MediaActivatedEvent
+import com.dwlhm.event.MediaDeactivatedEvent
+import com.dwlhm.event.MediaMetadataChangedEvent
+import com.dwlhm.event.MediaStateChangedEvent
+import com.dwlhm.event.TabInfoChangedEvent
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import org.mozilla.geckoview.AllowOrDeny
@@ -13,27 +18,19 @@ import org.mozilla.geckoview.GeckoView
 import org.mozilla.geckoview.MediaSession
 
 class GeckoBrowserSession(
+    private val sessionId: String,
     private val session: GeckoSession,
 ): BrowserSession {
     private val _currentUrl = MutableStateFlow<String?>(null)
     private val _currentTitle = MutableStateFlow<String?>(null)
     private val _canGoBack = MutableStateFlow(false)
     private val _canGoForward = MutableStateFlow(false)
-    
-    /**
-     * Internal tracking untuk status media playback.
-     * Di-update oleh mediaSessionDelegate callbacks.
-     */
     private var _hasActiveMedia: Boolean = false
+
+    override val activeSessionId = sessionId
     
     override val hasActiveMedia: Boolean
         get() = _hasActiveMedia
-    
-    override var sessionCallback: BrowserSessionCallback? = null
-    
-    override fun setCallback(callback: BrowserSessionCallback) {
-        sessionCallback = callback
-    }
 
     override val activeUrl: StateFlow<String?>
         get() = _currentUrl
@@ -63,14 +60,11 @@ class GeckoBrowserSession(
     }
 
     override fun suspendSession(keepActive: Boolean) {
-        // Selalu hilangkan focus saat suspend
         session.setFocused(false)
         
-        // Hanya set active false jika tidak perlu tetap aktif (misalnya untuk media)
         if (!keepActive) {
             session.setActive(false)
         }
-        // Jika keepActive = true, session tetap active agar media bisa jalan di background
     }
 
     override fun setActive(state: Boolean) {
@@ -134,9 +128,9 @@ class GeckoBrowserSession(
                 // TODO: Implement proper adblock rules (EasyList)
                 val deny = url.contains("ads") || url.contains("tracker")
                 return if (deny) {
-                    GeckoResult.deny()   // <-- THIS
+                    GeckoResult.deny()
                 } else {
-                    null  // allow
+                    null
                 }
             }
         }
@@ -163,9 +157,13 @@ class GeckoBrowserSession(
                     val currentItem = historyList[currentIndex]
                     _currentUrl.value = currentItem.uri
                     _currentTitle.value = currentItem.title
-                    sessionCallback?.onTabInfoChanged(
-                        currentItem.title,
-                        currentItem.uri
+
+                    EventDispatcher.dispatch(
+                        TabInfoChangedEvent(
+                            activeSessionId,
+                            currentItem.uri,
+                            currentItem.title,
+                        )
                     )
                 }
             }
@@ -173,21 +171,24 @@ class GeckoBrowserSession(
 
         session.mediaSessionDelegate = object : MediaSession.Delegate {
             override fun onActivated(session: GeckoSession, mediaSession: MediaSession) {
-                // Track media state - session ini sekarang punya media aktif
                 _hasActiveMedia = true
-                
-                sessionCallback?.onMediaActivated(
-                    GeckoMediaSession(
-                        mediaSession
+
+                EventDispatcher.dispatch(
+                    MediaActivatedEvent(
+                        sessionId,
+                        GeckoMediaSession(mediaSession)
                     )
                 )
             }
 
             override fun onDeactivated(session: GeckoSession, mediaSession: MediaSession) {
-                // Track media state - media sudah tidak aktif
                 _hasActiveMedia = false
-                
-                sessionCallback?.onMediaDeactivated()
+
+                EventDispatcher.dispatch(
+                    MediaDeactivatedEvent(
+                        sessionId,
+                    )
+                )
             }
 
             override fun onMetadata(
@@ -196,44 +197,64 @@ class GeckoBrowserSession(
                 meta: MediaSession.Metadata
             ) {
                 if (meta.artwork == null) {
-                    sessionCallback?.onMediaMetadataChanged(
-                        BrowserMediaMetadata(
-                            meta.album,
-                            meta.artist,
-                            null,
-                            meta.title
+                    EventDispatcher.dispatch(
+                        MediaMetadataChangedEvent(
+                            sessionId,
+                            GeckoMediaSession(mediaSession),
+                            BrowserMediaMetadata(
+                                meta.album,
+                                meta.artist,
+                                null,
+                                meta.title
+                            )
                         )
                     )
                     return
                 }
 
                 meta.artwork!!.getBitmap(128).accept { bitmap ->
-                    sessionCallback?.onMediaMetadataChanged(
-                        BrowserMediaMetadata(
-                            meta.album,
-                            meta.artist,
-                            bitmap,
-                            meta.title,
+                    EventDispatcher.dispatch(
+                        MediaMetadataChangedEvent(
+                            sessionId,
+                            GeckoMediaSession(mediaSession),
+                            BrowserMediaMetadata(
+                                meta.album,
+                                meta.artist,
+                                bitmap,
+                                meta.title
+                            )
                         )
                     )
                 }
             }
 
             override fun onPlay(session: GeckoSession, mediaSession: MediaSession) {
-                sessionCallback?.onMediaStateChanged(
-                    BrowserMediaState.PLAY
+                EventDispatcher.dispatch(
+                    MediaStateChangedEvent(
+                        sessionId,
+                        GeckoMediaSession(mediaSession),
+                        BrowserMediaState.PLAY,
+                    )
                 )
             }
 
             override fun onPause(session: GeckoSession, mediaSession: MediaSession) {
-                sessionCallback?.onMediaStateChanged(
-                    BrowserMediaState.PAUSE
+                EventDispatcher.dispatch(
+                    MediaStateChangedEvent(
+                        sessionId,
+                        GeckoMediaSession(mediaSession),
+                        BrowserMediaState.PAUSE,
+                    )
                 )
             }
 
             override fun onStop(session: GeckoSession, mediaSession: MediaSession) {
-                sessionCallback?.onMediaStateChanged(
-                    BrowserMediaState.STOP
+                EventDispatcher.dispatch(
+                    MediaStateChangedEvent(
+                        sessionId,
+                        GeckoMediaSession(mediaSession),
+                        BrowserMediaState.STOP,
+                    )
                 )
             }
         }

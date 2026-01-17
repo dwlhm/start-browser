@@ -13,8 +13,6 @@ import com.dwlhm.browser.session.SessionRegistry
 import com.dwlhm.data.api.AppDatabase
 import com.dwlhm.data.store.session.SessionRuntimeStore
 import com.dwlhm.event.EventCollector
-import com.dwlhm.media.MediaStateRegistry
-import com.dwlhm.media.MediaStateRegistryListener
 import com.dwlhm.media.api.MediaPlaybackCoordinator
 import com.dwlhm.session.api.DefaultSessionFocusController
 import com.dwlhm.session.api.DefaultSessionManager
@@ -48,7 +46,9 @@ class MainApplication: Application() {
     val sessionRuntimeStore: SessionRuntimeStore by lazy { SessionRuntimeStore() }
     val sessionManager: SessionManager by lazy { DefaultSessionManager(
         sessionRegistry,
-        DefaultBrowserSessionFactory(browserRuntime),
+        DefaultBrowserSessionFactory(
+            browserRuntime = browserRuntime
+        ),
         sessionRuntimeStore,
         sessionFocusController
     ) }
@@ -58,8 +58,6 @@ class MainApplication: Application() {
     ) }
 
     private var mediaPlaybackCoordinator: MediaPlaybackCoordinator? = null
-    val mediaStateRegistry: MediaStateRegistry by lazy { MediaStateRegistry() }
-    private var mediaStateRegistryListener: MediaStateRegistryListener? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -75,10 +73,6 @@ class MainApplication: Application() {
             )
 
             mediaPlaybackCoordinator?.listenToMediaEvent(EventCollector(applicationScope))
-
-            mediaStateRegistryListener = MediaStateRegistryListener(mediaStateRegistry, applicationScope).apply {
-                observeEvents()
-            }
         }
     }
 
@@ -86,9 +80,7 @@ class MainApplication: Application() {
         super.onTerminate()
 
         mediaPlaybackCoordinator?.destroy()
-
         sessionRuntimeStore.clear()
-
         applicationScope.cancel()
     }
 

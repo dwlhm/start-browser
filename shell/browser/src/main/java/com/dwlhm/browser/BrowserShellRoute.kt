@@ -24,7 +24,6 @@ fun BrowserShellRoute(
     val viewModel = remember(activeSession, foregroundSessionId) {
         BrowserShellViewModel(
             browserSession = activeSession,
-            sessionId = foregroundSessionId ?: ""
         )
     }
 

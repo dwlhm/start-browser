@@ -36,7 +36,7 @@ class DefaultSessionManager(
         sessionRegistry.addSession(sessionDescriptor)
         sessionRegistry.setForegroundSession(sessionId)
 
-        val browserSession = sessionFactory.create(initialUrl, isIncognito)
+        val browserSession = sessionFactory.create(sessionId, initialUrl, isIncognito)
 
         _currentSession.value?.let { sessionFocusController.onBackground(it) }
 
@@ -51,17 +51,19 @@ class DefaultSessionManager(
         if (sessionRegistry.foregroundSessionId.value == sessionId) return
 
         val descriptor = sessionRegistry.getSession(sessionId) ?: return
-        var session = sessionRuntimeStore.get(descriptor.id)
 
-        if (session == null) {
-            val browserSession = sessionFactory.create(descriptor.url, descriptor.isIncognito)
-            sessionRuntimeStore.put(sessionId, browserSession)
-            session = browserSession
+        val session = sessionRuntimeStore.get(descriptor.id) ?: run {
+            val newSession = sessionFactory.create(
+                descriptor.id,
+                descriptor.url,
+                descriptor.isIncognito
+            )
+
+            sessionRuntimeStore.put(descriptor.id, newSession)
+            newSession
         }
 
-        _currentSession.value?.let {
-            sessionFocusController.onBackground(it)
-        }
+        _currentSession.value?.let { sessionFocusController.onBackground(it) }
 
         sessionFocusController.onForeground(session)
         sessionRegistry.setForegroundSession(sessionId)

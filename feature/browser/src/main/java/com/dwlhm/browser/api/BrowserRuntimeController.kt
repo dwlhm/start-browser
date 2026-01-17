@@ -10,7 +10,7 @@ class BrowserRuntimeController(
 ): BrowserRuntime {
     private val geckoRuntime by lazy { GeckoBrowserRuntime.getInstance(context.applicationContext) }
 
-    override fun createSession(): BrowserSession = geckoRuntime.createSession()
+    override fun createSession(sessionId: String, isIncognito: Boolean): BrowserSession = geckoRuntime.createSession(sessionId, isIncognito)
 
     override fun shutdown() {
         geckoRuntime.shutdown()

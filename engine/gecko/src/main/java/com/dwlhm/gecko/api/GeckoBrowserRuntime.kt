@@ -12,8 +12,12 @@ import org.mozilla.geckoview.GeckoSessionSettings
 class GeckoBrowserRuntime private constructor(
     private val geckoRuntime: GeckoRuntime
 ): BrowserRuntime {
-    override fun createSession(): BrowserSession {
+    override fun createSession(
+        sessionId: String,
+        isIncognito: Boolean
+    ): BrowserSession {
         val settings = GeckoSessionSettings.Builder()
+            .usePrivateMode(isIncognito)
             .useTrackingProtection(true)
             .build()
 
@@ -27,7 +31,10 @@ class GeckoBrowserRuntime private constructor(
             }
         }
 
-        return GeckoBrowserSession(geckoSession)
+        return GeckoBrowserSession(
+            sessionId = sessionId,
+            session = geckoSession
+        )
     }
 
     override fun shutdown() {
