@@ -26,6 +26,18 @@ data class TabClosedEvent(
     val tabId: String,
 ): Event
 
+data class TabLocationChangedEvent(
+    val tabId: String,
+    val url: String,
+    val title: String,
+): Event
+
+data class TabTitleChangedEvent(
+    val tabId: String,
+    val url: String,
+    val title: String,
+): Event
+
 data class TabInfoChangedEvent(
     val tabId: String,
     val url: String,
@@ -51,4 +63,9 @@ data class MediaStateChangedEvent(
 
 data class MediaDeactivatedEvent(
     val tabId: String,
+): Event
+
+data class ToolbarVisibilityEvent(
+    val sessionId: String,
+    val visible: Boolean,
 ): Event

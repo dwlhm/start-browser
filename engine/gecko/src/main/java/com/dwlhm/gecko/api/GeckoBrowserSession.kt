@@ -1,5 +1,6 @@
 package com.dwlhm.gecko.api
 
+import android.util.Log
 import com.dwlhm.browser.BrowserMediaMetadata
 import com.dwlhm.browser.BrowserMediaState
 import com.dwlhm.browser.BrowserSession
@@ -9,6 +10,9 @@ import com.dwlhm.event.MediaDeactivatedEvent
 import com.dwlhm.event.MediaMetadataChangedEvent
 import com.dwlhm.event.MediaStateChangedEvent
 import com.dwlhm.event.TabInfoChangedEvent
+import com.dwlhm.event.TabLocationChangedEvent
+import com.dwlhm.event.TabTitleChangedEvent
+import com.dwlhm.event.ToolbarVisibilityEvent
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import org.mozilla.geckoview.AllowOrDeny
@@ -16,11 +20,14 @@ import org.mozilla.geckoview.GeckoResult
 import org.mozilla.geckoview.GeckoSession
 import org.mozilla.geckoview.GeckoView
 import org.mozilla.geckoview.MediaSession
+import kotlin.math.abs
 
 class GeckoBrowserSession(
     private val sessionId: String,
     private val session: GeckoSession,
 ): BrowserSession {
+    private var lastScrollY = 0
+    private var isToolbarVisible = true
     private val _currentUrl = MutableStateFlow<String?>(null)
     private val _currentTitle = MutableStateFlow<String?>(null)
     private val _canGoBack = MutableStateFlow(false)
@@ -124,20 +131,49 @@ class GeckoBrowserSession(
                 session: GeckoSession,
                 request: GeckoSession.NavigationDelegate.LoadRequest
             ): GeckoResult<AllowOrDeny?>? {
+                isToolbarVisible = true
+                EventDispatcher.dispatch(
+                    ToolbarVisibilityEvent(sessionId,  true)
+                )
+
                 val url = request.uri
                 // TODO: Implement proper adblock rules (EasyList)
                 val deny = url.contains("ads") || url.contains("tracker")
+
                 return if (deny) {
                     GeckoResult.deny()
                 } else {
                     null
                 }
             }
+
+            override fun onLocationChange(
+                session: GeckoSession,
+                url: String?,
+                perms: List<GeckoSession.PermissionDelegate.ContentPermission?>,
+                hasUserGesture: Boolean
+            ) {
+                EventDispatcher.dispatch(
+                    TabLocationChangedEvent(
+                        activeSessionId,
+                        url ?: "",
+                        _currentTitle.value ?: "",
+                    )
+                )
+            }
         }
 
         session.contentDelegate = object : GeckoSession.ContentDelegate {
             override fun onTitleChange(session: GeckoSession, title: String?) {
                 _currentTitle.value = title
+
+                EventDispatcher.dispatch(
+                    TabTitleChangedEvent(
+                        activeSessionId,
+                        _currentUrl.value ?: "",
+                        title ?: "",
+                    )
+                )
             }
         }
 
@@ -256,6 +292,30 @@ class GeckoBrowserSession(
                         BrowserMediaState.STOP,
                     )
                 )
+            }
+        }
+
+        session.scrollDelegate = object : GeckoSession.ScrollDelegate {
+            override fun onScrollChanged(session: GeckoSession, scrollX: Int, scrollY: Int) {
+                val threshold = 50
+                val delta = scrollY - lastScrollY
+
+                if (delta > threshold && isToolbarVisible) {
+                    isToolbarVisible = false
+                    EventDispatcher.dispatch(
+                        ToolbarVisibilityEvent(sessionId, false)
+                    )
+                }
+                else if (delta < -threshold && !isToolbarVisible) {
+                    isToolbarVisible = true
+                    EventDispatcher.dispatch(
+                        ToolbarVisibilityEvent(sessionId,  true)
+                    )
+                }
+
+                if (abs(delta) > threshold) {
+                    lastScrollY = scrollY
+                }
             }
         }
     }

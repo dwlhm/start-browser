@@ -2,17 +2,17 @@ package com.dwlhm.browser
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Icon
@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import com.dwlhm.browser.ui.BrowserView
 import com.dwlhm.ui.button.IconButton
 import com.dwlhm.ui.input.InputUri
+import com.dwlhm.ui.scaffold.DraggableScaffold
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.ArrowRight
 import compose.icons.feathericons.Square
@@ -40,6 +41,12 @@ fun BrowserShell(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
+    val peekHeightPx = if (uiState.showDynamicToolbar) { 160f } else { 0f }
+    val animatedPaddingBottom by animateDpAsState(
+        targetValue = if (uiState.showDynamicToolbar) 60.dp else 0.dp,
+        animationSpec = tween(durationMillis = 300),
+        label = "paddingAnimation"
+    )
 
     // Back handler
     BackHandler {
@@ -47,79 +54,77 @@ fun BrowserShell(
         if (!handled) onNavigateUp()
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)
-            .imePadding()
-    ) {
-        // Browser View
-        Box(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth()
-        ) {
-            BrowserView(
-                browserMountController = browserMountController,
-                modifier = Modifier.fillMaxSize(),
-                context = context
-            )
-        }
-
-        // Toolbar with animation
-        AnimatedVisibility(
-            visible = uiState.showDynamicToolbar,
-            enter = slideInVertically(
-                initialOffsetY = { it },
-                animationSpec = tween(durationMillis = 200)
-            ),
-            exit = slideOutVertically(
-                targetOffsetY = { it },
-                animationSpec = tween(durationMillis = 200)
-            )
-        ) {
-            Row(
+    DraggableScaffold(
+        peekHeightPx = peekHeightPx,
+        content = {
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color.White)
-                    .padding(horizontal = 8.dp, vertical = 4.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .fillMaxHeight()
             ) {
-                // Forward button
-                IconButton(
-                    onClick = { viewModel.goForward() },
-                    enabled = uiState.canGoForward
-                ) {
-                    Icon(
-                        imageVector = FeatherIcons.ArrowRight,
-                        contentDescription = "Forward",
-                        tint = if (uiState.canGoForward) Color.Black else Color.Gray
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(4.dp))
-
-                // URL input
-                InputUri(
-                    value = uiState.inputUrl,
-                    modifier = Modifier.weight(1f),
-                    onValueChange = viewModel::onUrlChange,
-                    onSubmit = viewModel::onUrlSubmit,
+                BrowserView(
+                    browserMountController = browserMountController,
+                    modifier = Modifier.fillMaxSize()
+                        .padding(bottom = animatedPaddingBottom),
+                    context = context
                 )
-
-                Spacer(modifier = Modifier.width(4.dp))
-
-                // Home button
-                IconButton(
-                    onClick = onGoToHome
+            }
+        },
+        sheetContent = {
+            AnimatedVisibility(
+                visible = uiState.showDynamicToolbar,
+                enter = slideInVertically(
+                    initialOffsetY = { it },
+                    animationSpec = tween(durationMillis = 200)
+                ),
+                exit = slideOutVertically(
+                    targetOffsetY = { it },
+                    animationSpec = tween(durationMillis = 200)
+                )
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color.White)
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        imageVector = FeatherIcons.Square,
-                        contentDescription = "Home",
-                        tint = Color.Black
+                    // Forward button
+                    IconButton(
+                        onClick = { viewModel.goForward() },
+                        enabled = uiState.canGoForward
+                    ) {
+                        Icon(
+                            imageVector = FeatherIcons.ArrowRight,
+                            contentDescription = "Forward",
+                            tint = if (uiState.canGoForward) Color.Black else Color.Gray
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(4.dp))
+
+                    // URL input
+                    InputUri(
+                        value = uiState.inputUrl,
+                        modifier = Modifier.weight(1f),
+                        onValueChange = viewModel::onUrlChange,
+                        onSubmit = viewModel::onUrlSubmit,
                     )
+
+                    Spacer(modifier = Modifier.width(4.dp))
+
+                    // Home button
+                    IconButton(
+                        onClick = onGoToHome
+                    ) {
+                        Icon(
+                            imageVector = FeatherIcons.Square,
+                            contentDescription = "Home",
+                            tint = Color.Black
+                        )
+                    }
                 }
             }
         }
-    }
+    )
 }

@@ -3,7 +3,10 @@ package com.dwlhm.browser
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dwlhm.browser.api.BrowserUiState
+import com.dwlhm.event.EventCollector
+import com.dwlhm.event.ToolbarVisibilityEvent
 import com.dwlhm.utils.normalizeUrl
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -12,14 +15,16 @@ import kotlinx.coroutines.launch
 
 class BrowserShellViewModel(
     private val browserSession: BrowserSession,
+    private val scope: CoroutineScope,
 ) : ViewModel() {
-
+    private val eventCollector = EventCollector(scope)
     private val _uiState = MutableStateFlow(BrowserUiState())
     val uiState: StateFlow<BrowserUiState> = _uiState.asStateFlow()
 
 
     init {
         observeBrowserSession()
+        listenInternalEvent()
     }
 
      fun observeBrowserSession() {
@@ -51,5 +56,11 @@ class BrowserShellViewModel(
     fun goForward(): Boolean {
         browserSession.goForward()
         return true
+    }
+
+    fun listenInternalEvent() {
+        eventCollector.on<ToolbarVisibilityEvent> { event ->
+            _uiState.update { it.copy(showDynamicToolbar = event.visible) }
+        }
     }
 }
